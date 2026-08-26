@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="km">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="description" content="Search Bac II exam results by student name or birthday." />
+    <meta property="og:title" content="Bac II Results | លទ្ធផលបាក់ឌុប" />
+    <meta property="og:description" content="Find your Bac II exam result by name or birthday." />
+    <meta property="og:image" content="./og.png" />
+    <title>Bac II Results | លទ្ធផលបាក់ឌុប</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <header class="topbar">
+        <div class="topbar-inner">
+          <div class="brand-mark" aria-hidden="true">១២</div>
+          <div class="brand-copy">
+            <p>Bac II Results</p>
+            <strong>លទ្ធផលប្រឡងបាក់ឌុប</strong>
+          </div>
+          <span class="public-pill">Public</span>
+        </div>
+      </header>
+
+      <section class="hero">
+        <div class="container">
+          <div class="year-pill"><span></span> ឆ្នាំសិក្សា ២០២៤–២០២៥</div>
+          <h1>រកមើលលទ្ធផល<br />ប្រឡងរបស់អ្នក</h1>
+          <p class="subtitle">Search by family name, given name, full name, or birthday.</p>
+
+          <form id="search-form" class="search-card">
+            <label class="sr-only" for="search-input">Search student results</label>
+            <div class="input-wrap">
+              <span aria-hidden="true">⌕</span>
+              <input id="search-input" type="search" autocomplete="off" enterkeyhint="search" placeholder="ឈ្មោះ ឬ ថ្ងៃខែឆ្នាំកំណើត" />
+            </div>
+            <button type="submit">ស្វែងរក</button>
+          </form>
+
+          <div class="examples">
+            <strong>សាកល្បង៖</strong>
+            <button type="button" data-example="ញ៉ែម">ញ៉ែម</button>
+            <button type="button" data-example="ដា សុធាវី">ដា សុធាវី</button>
+            <button type="button" data-example="២០ កក្កដា ០៧">២០ កក្កដា ០៧</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="results-section" class="container results" aria-live="polite">
+        <div id="initial-state" class="state-card">
+          <div class="state-icon">⌕</div>
+          <h2>បញ្ចូលព័ត៌មានដើម្បីស្វែងរក</h2>
+          <p>Your result will appear here. Your search stays on this device.</p>
+        </div>
+        <div id="results-content"></div>
+      </section>
+
+      <footer>
+        <strong>ប្រព័ន្ធស្វែងរកលទ្ធផលប្រឡងបាក់ឌុប</strong>
+        <p>Results are transcribed from published examination result sheets.</p>
+      </footer>
+    </main>
+  </body>
+</html>
