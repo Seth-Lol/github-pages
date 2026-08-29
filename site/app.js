@@ -1,138 +1,415 @@
-const arabicToKhmer = {
-  0: '០', 1: '១', 2: '២', 3: '៣', 4: '៤',
-  5: '៥', 6: '៦', 7: '៧', 8: '៨', 9: '៩',
+const app = document.querySelector('#app');
+const menuButton = document.querySelector('#menu-toggle');
+const navigation = document.querySelector('#primary-nav');
+
+const arabicToKhmer = { 0: '០', 1: '១', 2: '២', 3: '៣', 4: '៤', 5: '៥', 6: '៦', 7: '៧', 8: '៨', 9: '៩' };
+const khmerToArabic = Object.fromEntries(Object.entries(arabicToKhmer).map(([key, value]) => [value, key]));
+const subjectLabels = {
+  Khmer: ['ភាសាខ្មែរ', 'Khmer'],
+  Math: ['គណិតវិទ្យា', 'Mathematics'],
+  Physic: ['រូបវិទ្យា', 'Physics'],
+  Chemistry: ['គីមីវិទ្យា', 'Chemistry'],
+  Bio: ['ជីវវិទ្យា', 'Biology'],
+  History: ['ប្រវត្តិវិទ្យា', 'History'],
+  Language: ['ភាសាបរទេស', 'Foreign Language'],
 };
 
-const subjectLabels = [
-  ['Khmer', 'ភាសាខ្មែរ', 'Khmer'],
-  ['Math', 'គណិតវិទ្យា', 'Math'],
-  ['Bio', 'ជីវវិទ្យា', 'Biology'],
-  ['History', 'ប្រវត្តិវិទ្យា', 'History'],
-  ['Chemistry', 'គីមីវិទ្យា', 'Chemistry'],
-  ['Physic', 'រូបវិទ្យា', 'Physics'],
-  ['Language', 'ភាសាបរទេស', 'Language'],
-];
-
 let students = [];
-const form = document.querySelector('#search-form');
-const input = document.querySelector('#search-input');
-const initialState = document.querySelector('#initial-state');
-const resultsContent = document.querySelector('#results-content');
-const resultsSection = document.querySelector('#results-section');
+let loadError = false;
+let homeSearchType = 'name';
+let currentResults = [];
+let currentPage = 1;
+const pageSize = 8;
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
+}
 
 function normalize(value) {
-  return String(value || '')
+  return String(value ?? '')
     .trim()
     .toLowerCase()
-    .replace(/[0-9]/g, digit => arabicToKhmer[digit])
-    .replace(/[.,/\\|_\-–—()]/g, ' ')
+    .replace(/[០-៩]/g, digit => khmerToArabic[digit])
+    .replace(/[.,/\\|_\-–—()!+]/g, ' ')
     .replace(/\s+/g, ' ');
 }
 
-function escapeHtml(value) {
-  return String(value || '').replace(/[&<>'"]/g, character => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;',
-  })[character]);
+function khmerNumber(value) {
+  return String(value ?? '').replace(/[0-9]/g, digit => arabicToKhmer[digit]);
 }
 
-function scoreTone(score) {
-  if (score === 'A') return 'score-a';
-  if (score === 'B') return 'score-b';
-  if (score === 'C') return 'score-c';
-  return 'score-neutral';
+function getValue(student, ...keys) {
+  const key = keys.find(candidate => student[candidate] !== undefined && student[candidate] !== null && student[candidate] !== '');
+  return key ? student[key] : '';
 }
 
-function renderStudent(student, index) {
-  const subjects = subjectLabels.map(([key, khmer, english]) => `
-    <div class="subject">
-      <div class="subject-copy"><strong>${khmer}</strong><small>${english}</small></div>
-      <span class="subject-score ${scoreTone(student.Scores[key])}">${escapeHtml(student.Scores[key])}</span>
-    </div>
-  `).join('');
+function studentId(student) {
+  return getValue(student, 'Candidate ID', 'Candidate Number', 'Student ID', 'ID');
+}
 
+function studentYear(student) {
+  return getValue(student, 'Year', 'Exam Year') || '2025';
+}
+
+function studentProvince(student) {
+  return getValue(student, 'Province', 'City');
+}
+
+function studentCenter(student) {
+  return getValue(student, 'Exam Center', 'Center');
+}
+
+function nameParts(student) {
+  const parts = String(student.Name || '').trim().split(/\s+/);
+  return { family: parts[0] || '', given: parts.slice(1).join(' ') };
+}
+
+function routeInfo() {
+  const raw = location.hash.replace(/^#/, '') || 'home';
+  const [pathPart, queryPart = ''] = raw.split('?');
+  return { path: pathPart || 'home', params: new URLSearchParams(queryPart) };
+}
+
+function routeTo(path, params = {}) {
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (String(value ?? '').trim()) query.set(key, value);
+  });
+  location.hash = `${path}${query.toString() ? `?${query}` : ''}`;
+}
+
+function safeDecode(value) {
+  try { return decodeURIComponent(value); } catch { return value; }
+}
+
+function setActiveNavigation(path) {
+  const root = path.split('/')[0];
+  const section = root === 'student' || root === 'results' ? 'students' : root === 'school' ? 'schools' : root;
+  document.querySelectorAll('[data-route-link]').forEach(link => link.classList.toggle('active', link.dataset.routeLink === section));
+  navigation.classList.remove('open');
+  menuButton.setAttribute('aria-expanded', 'false');
+}
+
+function pageHero(title, description, trail = []) {
+  const breadcrumbs = [['#home', 'ទំព័រដើម'], ...trail];
   return `
-    <article class="result-card" style="animation-delay:${Math.min(index * 45, 180)}ms">
-      <div class="student-head">
-        <div class="grade-box ${scoreTone(student.Grade)}">${escapeHtml(student.Grade)}</div>
-        <div class="student-copy">
-          <div class="student-meta"><span class="pass-pill">${escapeHtml(student['Total Result'])}</span><span class="page-ref">Page ${student['Page Number']} / ${student['Total Pages']}</span></div>
-          <h3>${escapeHtml(student.Name)}</h3>
-          <p class="school">${escapeHtml(student['School Name'])}</p>
+    <section class="page-hero">
+      <div class="shell page-title">
+        <div class="breadcrumbs">${breadcrumbs.map(([href, label], index) => index === breadcrumbs.length - 1 ? `<span>${escapeHtml(label)}</span>` : `<a href="${href}">${escapeHtml(label)}</a>`).join('')}</div>
+        <h1>${title}</h1>
+        <p>${description}</p>
+      </div>
+    </section>`;
+}
+
+function stateCard(type, title, message, action = '') {
+  const symbol = type === 'error' ? '!' : type === 'empty' ? '0' : '…';
+  return `<div class="state-card ${type === 'error' ? 'state-error' : ''}"><span class="state-symbol">${symbol}</span><h2>${title}</h2><p>${message}</p>${action}</div>`;
+}
+
+function renderHome() {
+  const schoolCount = new Set(students.map(student => student['School Name']).filter(Boolean)).size;
+  app.innerHTML = `
+    <section class="hero">
+      <div class="shell hero-inner">
+        <p class="eyebrow">ទិន្នន័យលទ្ធផលប្រឡងឆ្នាំ ២០២៥</p>
+        <h1>ស្វែងរក<span>លទ្ធផលបាក់ឌុប</span><br />បានងាយ និងរហ័ស</h1>
+        <p class="hero-lead">ស្វែងរកតាមឈ្មោះ ថ្ងៃខែឆ្នាំកំណើត លេខបេក្ខជន ឬសាលា។ គាំទ្រការស្វែងរកជាភាសាខ្មែរ និងប្រើបានល្អលើទូរស័ព្ទ។</p>
+        <form class="home-search" id="home-search-form">
+          <div class="search-tabs" role="tablist" aria-label="ប្រភេទស្វែងរក">
+            <button class="search-tab active" type="button" data-search-type="name">ឈ្មោះសិស្ស</button>
+            <button class="search-tab" type="button" data-search-type="id">លេខបេក្ខជន</button>
+            <button class="search-tab" type="button" data-search-type="birthday">ថ្ងៃខែឆ្នាំកំណើត</button>
+            <button class="search-tab" type="button" data-search-type="school">សាលារៀន</button>
+          </div>
+          <div class="home-search-body">
+            <label for="home-query" id="home-search-label">ឈ្មោះពេញ ឬផ្នែកណាមួយនៃឈ្មោះ</label>
+            <div class="home-search-row">
+              <div class="input-with-icon"><span class="input-symbol" aria-hidden="true">⌕</span><input id="home-query" name="query" autocomplete="off" enterkeyhint="search" placeholder="ឧ. ឈុំ សុខរិទ្ធ" required /></div>
+              <button class="btn btn-primary" type="submit">ស្វែងរកឥឡូវ</button>
+            </div>
+            <p class="search-hint" id="home-search-hint">អាចវាយនាមត្រកូល នាមខ្លួន ឬឈ្មោះពេញ។</p>
+            <a class="advanced-link" href="#students">ស្វែងរកកម្រិតខ្ពស់</a>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="shell">
+        <div class="section-heading"><p class="section-kicker">ស្វែងរករហ័ស</p><h2>ជ្រើសរើសវិធីដែលងាយសម្រាប់អ្នក</h2><p>ចាប់ផ្តើមដោយព័ត៌មានតែមួយ ឬប្រើតម្រងច្រើនដើម្បីទទួលបានលទ្ធផលកាន់តែច្បាស់។</p></div>
+        <div class="quick-grid">
+          <a class="quick-card" href="#students"><span class="quick-icon">នាម</span><h3>ស្វែងរកសិស្ស</h3><p>ប្រើឈ្មោះ ថ្ងៃកំណើត លេខបេក្ខជន ឬបញ្ចូលតម្រងរួមគ្នា។</p><span class="card-arrow">→</span></a>
+          <a class="quick-card" href="#students"><span class="quick-icon">ID</span><h3>ស្វែងរកលេខបេក្ខជន</h3><p>ស្វែងរកកំណត់ត្រាជាក់លាក់ដោយលេខសម្គាល់បេក្ខជន ប្រសិនបើមានក្នុងទិន្នន័យ។</p><span class="card-arrow">→</span></a>
+          <a class="quick-card" href="#schools"><span class="quick-icon">សាលា</span><h3>ស្វែងរកសាលា</h3><p>រកសាលារៀន ហើយមើលបញ្ជីសិស្ស និងលទ្ធផលដែលមាន។</p><span class="card-arrow">→</span></a>
         </div>
       </div>
-      <div class="summary">
-        <div><p class="label">Overall grade</p><p class="value grade-value">Grade ${escapeHtml(student.Grade)}</p></div>
-        <div><p class="label">Birthday</p><p class="value">${escapeHtml(student.Birthday || 'មិនមានទិន្នន័យ')}</p></div>
+    </section>
+
+    <section class="section section-alt">
+      <div class="shell">
+        <div class="section-heading"><p class="section-kicker">របៀបប្រើប្រាស់</p><h2>ត្រឹមតែ ៣ ជំហាន</h2></div>
+        <div class="steps"><div class="step"><h3>បញ្ចូលព័ត៌មាន</h3><p>វាយឈ្មោះ ថ្ងៃកំណើត លេខបេក្ខជន ឬសាលា។</p></div><div class="step"><h3>ស្វែងរកកំណត់ត្រា</h3><p>ប្រព័ន្ធនឹងផ្គូផ្គងព័ត៌មានជាមួយទិន្នន័យដែលមាន។</p></div><div class="step"><h3>មើលលទ្ធផល</h3><p>បើកព័ត៌មានលម្អិត និងមើលនិទ្ទេសតាមមុខវិជ្ជា។</p></div></div>
+        <div class="stats-grid"><div class="stat"><strong>${khmerNumber(students.length)}</strong><span>កំណត់ត្រាសិស្ស</span></div><div class="stat"><strong>${khmerNumber(schoolCount)}</strong><span>សាលារៀន</span></div><div class="stat"><strong>២០២៥</strong><span>ឆ្នាំប្រឡង</span></div></div>
       </div>
-      <div class="subjects"><p class="label">Subject grades</p><div class="subject-grid">${subjects}</div></div>
-    </article>
-  `;
+    </section>
+    <section class="section"><div class="shell"><div class="notice"><span class="notice-icon">i</span><div><h2>ព័ត៌មានសំខាន់</h2><p>វេទិកានេះជាឧបករណ៍ស្វែងរកឯករាជ្យ និងមិនមែនជាគេហទំព័រផ្លូវការរបស់ក្រសួងអប់រំទេ។ សូមផ្ទៀងផ្ទាត់ព័ត៌មានសំខាន់ជាមួយប្រភពផ្លូវការ។</p></div></div></div></section>`;
+  bindHomeSearch();
 }
 
-function search(query) {
-  const needle = normalize(query);
-  if (!needle) return;
-
-  const matches = students.filter(student =>
-    normalize(student.Name).includes(needle) || normalize(student.Birthday) === needle
-  );
-
-  initialState.hidden = true;
-  if (!matches.length) {
-    resultsContent.innerHTML = `
-      <div class="state-card not-found">
-        <div class="state-icon">!</div>
-        <h2>រកមិនឃើញលទ្ធផល</h2>
-        <p>Check the spelling, try only the family name, or enter the birthday exactly as printed.</p>
-        <button type="button" id="reset-search">ស្វែងរកម្តងទៀត</button>
-      </div>`;
-    document.querySelector('#reset-search').addEventListener('click', resetSearch);
-  } else {
-    resultsContent.innerHTML = `
-      <div class="results-heading">
-        <div><p>Search results</p><h2>រកឃើញ ${matches.length} លទ្ធផល</h2></div>
-        <span class="count-pill">${matches.length} found</span>
-      </div>
-      <div class="cards">${matches.map(renderStudent).join('')}</div>`;
-  }
-  setTimeout(() => resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
-}
-
-function resetSearch() {
-  input.value = '';
-  resultsContent.innerHTML = '';
-  initialState.hidden = false;
-  input.focus();
-}
-
-form.addEventListener('submit', event => {
-  event.preventDefault();
-  search(input.value);
-});
-
-document.querySelectorAll('[data-example]').forEach(button => {
-  button.addEventListener('click', () => {
-    input.value = button.dataset.example;
+function bindHomeSearch() {
+  const config = {
+    name: ['ឈ្មោះពេញ ឬផ្នែកណាមួយនៃឈ្មោះ', 'ឧ. ឈុំ សុខរិទ្ធ', 'អាចវាយនាមត្រកូល នាមខ្លួន ឬឈ្មោះពេញ។'],
+    id: ['លេខបេក្ខជន / លេខសម្គាល់', 'ឧ. 123456', 'បញ្ចូលលេខជាខ្មែរ ឬអង់គ្លេស។'],
+    birthday: ['ថ្ងៃខែឆ្នាំកំណើត', 'ឧ. ២១ កញ្ញា ០៧', 'វាយតាមទម្រង់ដែលបានបោះពុម្ពក្នុងបញ្ជីលទ្ធផល។'],
+    school: ['ឈ្មោះសាលារៀន', 'ឧ. វិ.ទួលទំពូង', 'វាយឈ្មោះពេញ ឬផ្នែកណាមួយនៃឈ្មោះសាលា។'],
+  };
+  document.querySelectorAll('[data-search-type]').forEach(button => button.addEventListener('click', () => {
+    homeSearchType = button.dataset.searchType;
+    document.querySelectorAll('[data-search-type]').forEach(tab => tab.classList.toggle('active', tab === button));
+    const input = document.querySelector('#home-query');
+    document.querySelector('#home-search-label').textContent = config[homeSearchType][0];
+    input.placeholder = config[homeSearchType][1];
+    input.value = '';
+    document.querySelector('#home-search-hint').textContent = config[homeSearchType][2];
     input.focus();
+  }));
+  document.querySelector('#home-search-form').addEventListener('submit', event => {
+    event.preventDefault();
+    const query = document.querySelector('#home-query').value.trim();
+    if (!query) return;
+    if (homeSearchType === 'school') routeTo('schools', { q: query });
+    else routeTo('results', { [homeSearchType === 'name' ? 'q' : homeSearchType]: query });
   });
+}
+
+function renderStudentSearch() {
+  app.innerHTML = `${pageHero('ស្វែងរកសិស្ស', 'ប្រើព័ត៌មានតែមួយ ឬបញ្ចូលតម្រងច្រើន ដើម្បីស្វែងរកលទ្ធផលបានត្រឹមត្រូវជាងមុន។', [['#students', 'ស្វែងរកសិស្ស']])}
+    <section class="page-content"><div class="shell">
+      <form class="search-panel" id="advanced-form">
+        <div class="search-panel-header"><div><h2>ព័ត៌មានសម្រាប់ស្វែងរក</h2><p>អ្នកមិនចាំបាច់បំពេញគ្រប់ប្រអប់ទាំងអស់ទេ។</p></div></div>
+        <div class="form-grid">
+          <div class="form-field form-span-2"><label for="q">ឈ្មោះពេញ</label><input id="q" name="q" placeholder="ឧ. ឈុំ សុខរិទ្ធ" autocomplete="name" /><small>គាំទ្រឈ្មោះជាភាសាខ្មែរ</small></div>
+          <div class="form-field"><label for="candidate">លេខបេក្ខជន</label><input id="candidate" name="id" placeholder="លេខបេក្ខជន" inputmode="numeric" /></div>
+          <div class="form-field"><label for="family">នាមត្រកូល</label><input id="family" name="family" placeholder="ឧ. ឈុំ" /></div>
+          <div class="form-field"><label for="given">នាមខ្លួន</label><input id="given" name="given" placeholder="ឧ. សុខរិទ្ធ" /></div>
+          <div class="form-field"><label for="birthday">ថ្ងៃខែឆ្នាំកំណើត</label><input id="birthday" name="birthday" placeholder="ឧ. ២១ កញ្ញា ០៧" /></div>
+          <div class="form-field"><label for="school">សាលារៀន</label><input id="school" name="school" placeholder="ឈ្មោះសាលា" /></div>
+          <div class="form-field"><label for="province">រាជធានី / ខេត្ត</label><input id="province" name="province" placeholder="ប្រសិនបើមានក្នុងទិន្នន័យ" /></div>
+          <div class="form-field"><label for="center">មណ្ឌលប្រឡង</label><input id="center" name="center" placeholder="ប្រសិនបើមានក្នុងទិន្នន័យ" /></div>
+          <div class="form-field"><label for="year">ឆ្នាំប្រឡង</label><select id="year" name="year"><option value="">គ្រប់ឆ្នាំ</option><option value="2025">២០២៥</option></select></div>
+        </div>
+        <div class="form-actions"><button class="btn btn-secondary" id="reset-filters" type="reset">សម្អាតតម្រង</button><button class="btn btn-primary" type="submit">ស្វែងរកលទ្ធផល</button></div>
+      </form>
+      <div class="notice" style="margin-top:22px"><span class="notice-icon">?</span><div><h3>គន្លឹះស្វែងរក</h3><p>បើរកមិនឃើញ សាកល្បងវាយតែនាមត្រកូល ឬផ្នែកខ្លីមួយនៃឈ្មោះ។ ថ្ងៃកំណើតគួរតែវាយតាមទម្រង់ដូចក្នុងបញ្ជីប្រឡង។</p></div></div>
+    </div></section>`;
+  const form = document.querySelector('#advanced-form');
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    const params = Object.fromEntries(new FormData(form).entries());
+    if (!Object.values(params).some(value => String(value).trim())) {
+      form.querySelector('#q').focus();
+      return;
+    }
+    routeTo('results', params);
+  });
+}
+
+function filterStudents(params) {
+  return students.filter(student => {
+    const parts = nameParts(student);
+    const checks = [
+      ['q', student.Name, false],
+      ['family', parts.family, false],
+      ['given', parts.given, false],
+      ['id', studentId(student), true],
+      ['birthday', student.Birthday, true],
+      ['school', student['School Name'], false],
+      ['province', studentProvince(student), false],
+      ['center', studentCenter(student), false],
+      ['year', studentYear(student), true],
+    ];
+    return checks.every(([key, value, exact]) => {
+      const wanted = normalize(params.get(key));
+      if (!wanted) return true;
+      const actual = normalize(value);
+      return exact ? actual === wanted : actual.includes(wanted);
+    });
+  });
+}
+
+function renderResults(params) {
+  currentResults = filterStudents(params);
+  currentPage = Math.max(1, Number(params.get('page')) || 1);
+  const terms = [...params.entries()].filter(([key, value]) => key !== 'page' && key !== 'sort' && value).map(([, value]) => value);
+  app.innerHTML = `${pageHero('លទ្ធផលស្វែងរក', terms.length ? `លទ្ធផលផ្គូផ្គងសម្រាប់ “${escapeHtml(terms.join(' · '))}”` : 'លទ្ធផលសិស្សដែលមានក្នុងប្រព័ន្ធ។', [['#students', 'ស្វែងរកសិស្ស'], ['#results', 'លទ្ធផល']])}
+    <section class="page-content"><div class="shell"><div id="results-area"></div></div></section>`;
+  drawResults(params);
+}
+
+function sortStudents(list, sort) {
+  return [...list].sort((a, b) => {
+    if (sort === 'grade') return String(a.Grade).localeCompare(String(b.Grade));
+    if (sort === 'school') return String(a['School Name']).localeCompare(String(b['School Name']), 'km');
+    return String(a.Name).localeCompare(String(b.Name), 'km');
+  });
+}
+
+function resultRow(student) {
+  const index = students.indexOf(student);
+  const candidate = studentId(student) || `ទំព័រ ${khmerNumber(student['Page Number'] || '—')}`;
+  return `<tr><td class="student-cell"><strong>${escapeHtml(student.Name)}</strong><span>${escapeHtml(candidate)}</span></td><td>${escapeHtml(student.Birthday || 'មិនមានទិន្នន័យ')}</td><td>${escapeHtml(student['School Name'] || 'មិនមានទិន្នន័យ')}</td><td><span class="year-badge">${escapeHtml(khmerNumber(studentYear(student)))}</span></td><td><span class="grade-badge">${escapeHtml(student.Grade || '—')}</span></td><td><span class="status-badge ${normalize(student['Total Result']).includes('ធ្លាក់') ? 'failed' : ''}">${escapeHtml(student['Total Result'] || '—')}</span></td><td><a class="table-link" href="#student/${index}">មើលលម្អិត →</a></td></tr>`;
+}
+
+function resultCard(student) {
+  const index = students.indexOf(student);
+  return `<article class="student-card"><div class="student-card-head"><span class="grade-badge">${escapeHtml(student.Grade || '—')}</span><div><h3>${escapeHtml(student.Name)}</h3><p class="school-name">${escapeHtml(student['School Name'] || 'មិនមានទិន្នន័យ')}</p></div><span class="status-badge ${normalize(student['Total Result']).includes('ធ្លាក់') ? 'failed' : ''}">${escapeHtml(student['Total Result'] || '—')}</span></div><div class="student-card-meta"><div><span class="meta-label">ថ្ងៃកំណើត</span><span class="meta-value">${escapeHtml(student.Birthday || 'មិនមានទិន្នន័យ')}</span></div><div><span class="meta-label">ឆ្នាំប្រឡង</span><span class="meta-value">${escapeHtml(khmerNumber(studentYear(student)))}</span></div></div><a class="btn btn-light" href="#student/${index}">មើលលទ្ធផលលម្អិត</a></article>`;
+}
+
+function drawResults(params) {
+  const area = document.querySelector('#results-area');
+  if (!currentResults.length) {
+    area.innerHTML = stateCard('empty', 'រកមិនឃើញលទ្ធផល', 'សូមពិនិត្យអក្ខរាវិរុទ្ធ សាកល្បងផ្នែកខ្លីនៃឈ្មោះ ឬកាត់បន្ថយចំនួនតម្រង។', '<a class="btn btn-primary" href="#students">កែប្រែការស្វែងរក</a>');
+    return;
+  }
+  const sort = params.get('sort') || 'name';
+  const sorted = sortStudents(currentResults, sort);
+  const pages = Math.ceil(sorted.length / pageSize);
+  currentPage = Math.min(currentPage, pages);
+  const visible = sorted.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const pageButtons = Array.from({ length: pages }, (_, index) => index + 1).map(page => `<button type="button" class="${page === currentPage ? 'active' : ''}" data-page="${page}" aria-label="Page ${page}">${khmerNumber(page)}</button>`).join('');
+  area.innerHTML = `
+    <div class="results-toolbar"><div><h2>រកឃើញ ${khmerNumber(currentResults.length)} លទ្ធផល</h2><p>បង្ហាញ ${khmerNumber((currentPage - 1) * pageSize + 1)}–${khmerNumber(Math.min(currentPage * pageSize, sorted.length))} នៃ ${khmerNumber(sorted.length)}</p></div><div class="sort-control"><label for="sort-results">តម្រៀបតាម</label><select id="sort-results"><option value="name" ${sort === 'name' ? 'selected' : ''}>ឈ្មោះ</option><option value="grade" ${sort === 'grade' ? 'selected' : ''}>និទ្ទេស</option><option value="school" ${sort === 'school' ? 'selected' : ''}>សាលា</option></select></div></div>
+    <div class="table-wrap"><table class="results-table"><thead><tr><th>សិស្ស</th><th>ថ្ងៃកំណើត</th><th>សាលា</th><th>ឆ្នាំ</th><th>និទ្ទេស</th><th>លទ្ធផល</th><th></th></tr></thead><tbody>${visible.map(resultRow).join('')}</tbody></table><div class="result-cards-mobile">${visible.map(resultCard).join('')}</div></div>
+    ${pages > 1 ? `<nav class="pagination" aria-label="Results pages"><button type="button" data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>‹</button>${pageButtons}<button type="button" data-page="${currentPage + 1}" ${currentPage === pages ? 'disabled' : ''}>›</button></nav>` : ''}`;
+  document.querySelector('#sort-results').addEventListener('change', event => { params.set('sort', event.target.value); params.delete('page'); routeTo('results', Object.fromEntries(params)); });
+  document.querySelectorAll('[data-page]').forEach(button => button.addEventListener('click', () => { params.set('page', button.dataset.page); routeTo('results', Object.fromEntries(params)); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
+}
+
+function renderStudentDetail(index) {
+  const student = students[Number(index)];
+  if (!student) { renderNotFound(); return; }
+  const scores = Object.entries(subjectLabels).map(([key, [khmer, english]]) => `<tr><td><strong>${khmer}</strong><br><span class="meta-label">${english}</span></td><td><span class="grade-badge">${escapeHtml(student.Scores?.[key] || '—')}</span></td></tr>`).join('');
+  app.innerHTML = `${pageHero('លទ្ធផលសិស្ស', 'ព័ត៌មានលម្អិតពីកំណត់ត្រា និងនិទ្ទេសតាមមុខវិជ្ជា។', [['#students', 'ស្វែងរកសិស្ស'], ['#student', escapeHtml(student.Name)]])}
+    <section class="page-content"><div class="shell detail-grid">
+      <article class="detail-card"><div class="result-identity"><div class="result-grade">${escapeHtml(student.Grade || '—')}</div><div><div class="detail-status-row"><span class="status-badge ${normalize(student['Total Result']).includes('ធ្លាក់') ? 'failed' : ''}">${escapeHtml(student['Total Result'] || 'មិនមានទិន្នន័យ')}</span><span class="year-badge">ឆ្នាំ ${escapeHtml(khmerNumber(studentYear(student)))}</span></div><h1>${escapeHtml(student.Name)}</h1><p>${escapeHtml(student['School Name'] || 'មិនមានទិន្នន័យសាលា')}</p></div></div>
+        <div class="detail-fields"><div class="detail-field"><span class="meta-label">លេខបេក្ខជន</span><span class="meta-value">${escapeHtml(studentId(student) || 'មិនមានទិន្នន័យ')}</span></div><div class="detail-field"><span class="meta-label">ថ្ងៃខែឆ្នាំកំណើត</span><span class="meta-value">${escapeHtml(student.Birthday || 'មិនមានទិន្នន័យ')}</span></div><div class="detail-field"><span class="meta-label">រាជធានី / ខេត្ត</span><span class="meta-value">${escapeHtml(studentProvince(student) || 'មិនមានទិន្នន័យ')}</span></div><div class="detail-field"><span class="meta-label">មណ្ឌលប្រឡង</span><span class="meta-value">${escapeHtml(studentCenter(student) || 'មិនមានទិន្នន័យ')}</span></div></div>
+        <div class="score-section"><h2>និទ្ទេសតាមមុខវិជ្ជា</h2><table class="score-table"><thead><tr><th>មុខវិជ្ជា</th><th>និទ្ទេស</th></tr></thead><tbody>${scores}</tbody></table></div>
+      </article>
+      <aside class="side-card-wrap"><div class="side-card"><h2>ព័ត៌មានប្រភព</h2><p>កំណត់ត្រានេះត្រូវបានដកស្រង់ពីទំព័រ ${escapeHtml(khmerNumber(student['Page Number'] || '—'))} នៃឯកសារលទ្ធផល។ សូមផ្ទៀងផ្ទាត់ជាមួយប្រភពផ្លូវការ។</p><a class="btn btn-secondary" href="#schools?q=${encodeURIComponent(student['School Name'] || '')}">មើលសាលានេះ</a></div><div class="side-card"><h2>រកឃើញព័ត៌មានខុស?</h2><p>សូមផ្ញើឈ្មោះ និងព័ត៌មានដែលត្រូវកែ ដើម្បីឱ្យយើងពិនិត្យឡើងវិញ។</p><a class="btn btn-danger-light" href="#report">រាយការណ៍ព័ត៌មានខុស</a></div></aside>
+    </div></section>`;
+}
+
+function schoolsData() {
+  const grouped = new Map();
+  students.forEach(student => {
+    const name = student['School Name'] || 'មិនមានឈ្មោះសាលា';
+    if (!grouped.has(name)) grouped.set(name, []);
+    grouped.get(name).push(student);
+  });
+  return [...grouped.entries()].map(([name, records]) => ({ name, records, years: [...new Set(records.map(studentYear))] }));
+}
+
+function renderSchools(params) {
+  const query = params.get('q') || '';
+  const province = params.get('province') || '';
+  const schools = schoolsData().filter(school => normalize(school.name).includes(normalize(query)) && (!province || school.records.some(student => normalize(studentProvince(student)).includes(normalize(province)))));
+  app.innerHTML = `${pageHero('ស្វែងរកសាលារៀន', 'ស្វែងរកសាលា ហើយមើលកំណត់ត្រាសិស្សដែលមានសម្រាប់សាលានោះ។', [['#schools', 'ស្វែងរកសាលា']])}
+    <section class="page-content"><div class="shell"><form class="search-panel" id="school-form"><div class="form-grid"><div class="form-field form-span-2"><label for="school-query">ឈ្មោះសាលារៀន</label><input id="school-query" name="q" value="${escapeHtml(query)}" placeholder="វាយឈ្មោះសាលា" /></div><div class="form-field"><label for="school-province">រាជធានី / ខេត្ត</label><input id="school-province" name="province" value="${escapeHtml(province)}" placeholder="ប្រសិនបើមានក្នុងទិន្នន័យ" /></div></div><div class="form-actions"><button class="btn btn-secondary" type="reset">សម្អាត</button><button class="btn btn-primary" type="submit">ស្វែងរកសាលា</button></div></form>
+      <div class="results-toolbar"><div><h2>${query || province ? `រកឃើញ ${khmerNumber(schools.length)} សាលា` : `សាលារៀន ${khmerNumber(schools.length)}`}</h2><p>ជ្រើសរើសសាលាដើម្បីមើលបញ្ជីសិស្ស</p></div></div>
+      ${schools.length ? `<div class="school-grid">${schools.map((school, index) => `<article class="school-card"><span class="school-code">${khmerNumber(index + 1)}</span><h2>${escapeHtml(school.name)}</h2><p>ទីតាំង: ${escapeHtml(studentProvince(school.records[0]) || 'មិនមានទិន្នន័យ')}</p><div class="school-card-stats"><span>${khmerNumber(school.records.length)} កំណត់ត្រា</span><span>${school.years.map(khmerNumber).join(', ')}</span></div><a class="table-link" href="#school/${encodeURIComponent(school.name)}">មើលសាលា →</a></article>`).join('')}</div>` : stateCard('empty', 'រកមិនឃើញសាលា', 'សាកល្បងផ្នែកខ្លីនៃឈ្មោះសាលា ឬសម្អាតតម្រង។')}
+    </div></section>`;
+  const form = document.querySelector('#school-form');
+  form.addEventListener('submit', event => { event.preventDefault(); routeTo('schools', Object.fromEntries(new FormData(form))); });
+  form.addEventListener('reset', () => setTimeout(() => routeTo('schools'), 0));
+}
+
+function renderSchoolDetail(encodedName, params) {
+  const name = safeDecode(encodedName);
+  const allRecords = students.filter(student => student['School Name'] === name);
+  if (!allRecords.length) { renderNotFound(); return; }
+  const query = params.get('q') || '';
+  const year = params.get('year') || '';
+  const grade = params.get('grade') || '';
+  const records = allRecords.filter(student => normalize(student.Name).includes(normalize(query)) && (!year || normalize(studentYear(student)) === normalize(year)) && (!grade || normalize(student.Grade) === normalize(grade)));
+  app.innerHTML = `${pageHero('ព័ត៌មានសាលា', 'មើលកំណត់ត្រាសិស្សដែលមាន និងស្វែងរកក្នុងសាលានេះ។', [['#schools', 'ស្វែងរកសាលា'], [`#school/${encodedName}`, name]])}
+    <section class="page-content"><div class="shell"><div class="search-panel"><div class="school-head"><span class="school-code">សាលា</span><div><h2>${escapeHtml(name)}</h2><p>${khmerNumber(allRecords.length)} កំណត់ត្រា · ឆ្នាំប្រឡង ២០២៥ · ${escapeHtml(studentProvince(allRecords[0]) || 'ទីតាំងមិនមានទិន្នន័យ')}</p></div></div></div>
+      <form class="search-panel" id="inside-school-form" style="margin-top:18px"><div class="form-grid"><div class="form-field"><label for="inside-name">ឈ្មោះសិស្ស</label><input id="inside-name" name="q" value="${escapeHtml(query)}" placeholder="ស្វែងរកក្នុងសាលា" /></div><div class="form-field"><label for="inside-year">ឆ្នាំ</label><select id="inside-year" name="year"><option value="">គ្រប់ឆ្នាំ</option><option value="2025" ${year === '2025' ? 'selected' : ''}>២០២៥</option></select></div><div class="form-field"><label for="inside-grade">និទ្ទេស</label><select id="inside-grade" name="grade"><option value="">គ្រប់និទ្ទេស</option>${['A','B','C','D','E','F'].map(value => `<option ${grade === value ? 'selected' : ''}>${value}</option>`).join('')}</select></div></div><div class="form-actions"><button class="btn btn-secondary" type="reset">សម្អាត</button><button class="btn btn-primary" type="submit">អនុវត្តតម្រង</button></div></form>
+      <div class="results-toolbar"><div><h2>សិស្ស ${khmerNumber(records.length)} នាក់</h2><p>កំណត់ត្រាដែលផ្គូផ្គងតម្រង</p></div></div>
+      ${records.length ? `<div class="table-wrap"><table class="results-table"><thead><tr><th>សិស្ស</th><th>ថ្ងៃកំណើត</th><th>ឆ្នាំ</th><th>និទ្ទេស</th><th>លទ្ធផល</th><th></th></tr></thead><tbody>${records.map(student => resultRow(student).replace(`<td>${escapeHtml(student['School Name'] || 'មិនមានទិន្នន័យ')}</td>`, '')).join('')}</tbody></table><div class="result-cards-mobile">${records.map(resultCard).join('')}</div></div>` : stateCard('empty', 'មិនមានកំណត់ត្រាផ្គូផ្គង', 'សូមសម្អាតតម្រង ឬសាកល្បងឈ្មោះផ្សេង។')}
+    </div></section>`;
+  const form = document.querySelector('#inside-school-form');
+  form.addEventListener('submit', event => { event.preventDefault(); routeTo(`school/${encodedName}`, Object.fromEntries(new FormData(form))); });
+  form.addEventListener('reset', () => setTimeout(() => routeTo(`school/${encodedName}`), 0));
+}
+
+function renderAbout() {
+  app.innerHTML = `${pageHero('អំពីវេទិកា', 'ស្វែងយល់ពីគោលបំណង ប្រភពទិន្នន័យ និងរបៀបប្រើប្រាស់ប្រព័ន្ធ។', [['#about', 'អំពីយើង']])}<section class="page-content"><div class="shell content-layout"><article class="prose-card"><h2>វេទិកានេះធ្វើអ្វី?</h2><p>BacII Result Finder ជួយសិស្ស ឪពុកម្តាយ និងសាលារៀន ស្វែងរកកំណត់ត្រាលទ្ធផលប្រឡងបាក់ឌុបដែលបានបញ្ចូលក្នុងប្រព័ន្ធ។ អ្នកអាចស្វែងរកដោយឈ្មោះ ថ្ងៃកំណើត លេខបេក្ខជន ឬសាលារៀន។</p><h2>របៀបស្វែងរក</h2><ol><li>ជ្រើសរើសការស្វែងរកសិស្ស ឬសាលា។</li><li>បញ្ចូលព័ត៌មានយ៉ាងហោចណាស់មួយ។</li><li>ប្រៀបធៀបឈ្មោះ ថ្ងៃកំណើត និងសាលា ដើម្បីកំណត់អត្តសញ្ញាណកំណត់ត្រាត្រឹមត្រូវ។</li><li>បើក “មើលលម្អិត” ដើម្បីមើលនិទ្ទេសតាមមុខវិជ្ជា។</li></ol><h2>ប្រភព និងការបដិសេធ</h2><p>ទិន្នន័យត្រូវបានដកស្រង់ពីសន្លឹកលទ្ធផលប្រឡងដែលបានផ្សព្វផ្សាយ។ កំហុសអាចកើតឡើងក្នុងដំណើរការបញ្ចូល ឬអានអក្សរ។ វេទិកានេះមិនអះអាងថាជាសេវាផ្លូវការរបស់ក្រសួងទេ ហើយព័ត៌មានសំខាន់គួរតែផ្ទៀងផ្ទាត់ជាមួយប្រភពផ្លូវការ។</p><h2>ឯកជនភាព</h2><p>ប្រព័ន្ធបង្ហាញតែព័ត៌មានដែលចាំបាច់សម្រាប់បែងចែកលទ្ធផលសិស្ស។ មិនមានការចូលគណនី ឬការផ្ទៀងផ្ទាត់អត្តសញ្ញាណទេ ហើយយើងជៀសវាងការបង្ហាញព័ត៌មានផ្ទាល់ខ្លួនដែលមិនចាំបាច់។</p></article><aside class="side-card-wrap"><div class="side-card"><h2>ត្រូវការជំនួយ?</h2><p>ទាក់ទងមកយើង ប្រសិនបើអ្នករកមិនឃើញកំណត់ត្រា ឬមិនដឹងរបៀបស្វែងរក។</p><a class="btn btn-primary" href="#contact">ទាក់ទងមកយើង</a></div><div class="side-card"><h2>ព័ត៌មានមិនត្រឹមត្រូវ?</h2><p>ផ្ញើព័ត៌មានលម្អិតដើម្បីឱ្យយើងអាចពិនិត្យកំណត់ត្រាឡើងវិញ។</p><a class="btn btn-secondary" href="#report">រាយការណ៍កំហុស</a></div></aside></div></section>`;
+}
+
+function renderContact(reportMode = false) {
+  const title = reportMode ? 'រាយការណ៍ព័ត៌មានខុស' : 'ទំនាក់ទំនង និងជំនួយ';
+  const description = reportMode ? 'ផ្ញើព័ត៌មានកំណត់ត្រាដែលមិនត្រឹមត្រូវ ដើម្បីឱ្យយើងពិនិត្យឡើងវិញ។' : 'ត្រូវការជំនួយក្នុងការស្វែងរក? អ្នកអាចទាក់ទងមកយើងតាម Telegram ឬ Email។';
+  app.innerHTML = `${pageHero(title, description, [[reportMode ? '#report' : '#contact', reportMode ? 'រាយការណ៍' : 'ទំនាក់ទំនង']])}<section class="page-content"><div class="shell"><div class="contact-grid"><article class="contact-card"><span class="contact-symbol">TG</span><h2>Telegram</h2><p>@Iamnotaproplayer<br />សម្រាប់សំណួររហ័ស និងការរាយការណ៍ព័ត៌មាន។</p><a class="btn btn-primary" href="https://t.me/Iamnotaproplayer" target="_blank" rel="noreferrer">ទាក់ទងតាម Telegram</a></article><article class="contact-card"><span class="contact-symbol">@</span><h2>Email</h2><p>investingseth@gmail.com<br />សម្រាប់ព័ត៌មានលម្អិត ឬភ្ជាប់ឯកសារយោង។</p><a class="btn btn-secondary" href="mailto:investingseth@gmail.com?subject=${reportMode ? 'Report incorrect BacII information' : 'BacII Result Finder help'}">ផ្ញើ Email</a></article></div><div class="report-box"><h2>${reportMode ? 'ព័ត៌មានដែលគួរផ្ញើមក' : 'រាយការណ៍ព័ត៌មានមិនត្រឹមត្រូវ'}</h2><p>${reportMode ? 'សូមបញ្ចូលឈ្មោះសិស្ស សាលា ឆ្នាំប្រឡង លេខទំព័រ (ប្រសិនបើមាន) និងពន្យល់ពីព័ត៌មានដែលត្រូវកែ។ កុំផ្ញើព័ត៌មានផ្ទាល់ខ្លួនដែលមិនចាំបាច់។' : 'បើឈ្មោះ ថ្ងៃកំណើត សាលា ឬនិទ្ទេសមិនត្រឹមត្រូវ សូមផ្ញើតំណភ្ជាប់កំណត់ត្រា និងពន្យល់ពីចំណុចដែលត្រូវពិនិត្យ។'}</p>${reportMode ? '<a class="btn btn-primary" href="mailto:investingseth@gmail.com?subject=Report incorrect BacII information">ចាប់ផ្តើមរាយការណ៍</a>' : '<a class="btn btn-secondary" href="#report">មើលការណែនាំរាយការណ៍</a>'}</div></div></section>`;
+}
+
+function renderPolicy(type) {
+  const privacy = type === 'privacy';
+  app.innerHTML = `${pageHero(privacy ? 'ឯកជនភាព' : 'ការបដិសេធ', privacy ? 'របៀបដែលវេទិកាគោរពឯកជនភាពរបស់អ្នកប្រើប្រាស់។' : 'ព័ត៌មានសំខាន់អំពីភាពត្រឹមត្រូវ និងស្ថានភាពរបស់វេទិកា។', [[`#${type}`, privacy ? 'ឯកជនភាព' : 'ការបដិសេធ']])}<section class="page-content"><div class="shell"><article class="prose-card">${privacy ? '<h2>ការស្វែងរករបស់អ្នក</h2><p>វេទិកានេះមិនត្រូវការគណនី ការចូលប្រើ ឬការផ្ទៀងផ្ទាត់អត្តសញ្ញាណទេ។ ការស្វែងរកត្រូវបានអនុវត្តក្នុងកម្មវិធីរុករករបស់អ្នកដោយប្រើឯកសារទិន្នន័យដែលបានផ្សព្វផ្សាយជាមួយគេហទំព័រ។</p><h2>ព័ត៌មានសិស្ស</h2><p>យើងព្យាយាមបង្ហាញតែព័ត៌មានដែលចាំបាច់សម្រាប់សម្គាល់កំណត់ត្រា និងលទ្ធផលប្រឡង។ សូមកុំប្រើព័ត៌មាននេះសម្រាប់ការរំខាន ការរើសអើង ឬគោលបំណងដែលប៉ះពាល់ដល់សិស្ស។</p>' : '<h2>មិនមែនជាសេវាផ្លូវការ</h2><p>វេទិកានេះជាគម្រោងឯករាជ្យ និងមិនត្រូវបានចាត់ទុកថាជាគេហទំព័រផ្លូវការរបស់ក្រសួងអប់រំ យុវជន និងកីឡា លុះត្រាតែមានការអនុញ្ញាតជាក់លាក់ជាលាយលក្ខណ៍អក្សរ។</p><h2>ភាពត្រឹមត្រូវនៃទិន្នន័យ</h2><p>ការដកស្រង់ទិន្នន័យអាចមានកំហុសអក្ខរាវិរុទ្ធ ឬការផ្គូផ្គង។ សូមប្រើប្រភពផ្លូវការជាចុងក្រោយសម្រាប់ការបញ្ជាក់លទ្ធផល។ បើអ្នករកឃើញកំហុស សូមរាយការណ៍មកយើង។</p>'}</article></div></section>`;
+}
+
+function renderNotFound() {
+  app.innerHTML = `<section class="page-content"><div class="shell">${stateCard('error', 'រកមិនឃើញទំព័រ', 'តំណភ្ជាប់នេះប្រហែលជាមិនត្រឹមត្រូវ ឬកំណត់ត្រាមិនមានទៀតទេ។', '<a class="btn btn-primary" href="#home">ត្រឡប់ទៅទំព័រដើម</a>')}</div></section>`;
+}
+
+function renderLoadError() {
+  app.innerHTML = `<section class="page-content"><div class="shell">${stateCard('error', 'មិនអាចផ្ទុកទិន្នន័យបាន', 'សូមពិនិត្យការតភ្ជាប់អ៊ីនធឺណិត រួចសាកល្បងម្តងទៀត។', '<button class="btn btn-primary" type="button" onclick="location.reload()">ផ្ទុកឡើងវិញ</button>')}</div></section>`;
+}
+
+function renderRoute() {
+  const { path, params } = routeInfo();
+  setActiveNavigation(path);
+  if (loadError) { renderLoadError(); return; }
+  const [root, rest] = path.split('/');
+  if (root === 'home') renderHome();
+  else if (root === 'students') renderStudentSearch();
+  else if (root === 'results') renderResults(params);
+  else if (root === 'student') renderStudentDetail(rest);
+  else if (root === 'schools') renderSchools(params);
+  else if (root === 'school') renderSchoolDetail(rest, params);
+  else if (root === 'about') renderAbout();
+  else if (root === 'contact') renderContact(false);
+  else if (root === 'report') renderContact(true);
+  else if (root === 'privacy' || root === 'disclaimer') renderPolicy(root);
+  else renderNotFound();
+  requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+}
+
+menuButton.addEventListener('click', () => {
+  const open = navigation.classList.toggle('open');
+  menuButton.setAttribute('aria-expanded', String(open));
 });
+
+navigation.addEventListener('click', event => {
+  if (event.target.closest('a')) {
+    navigation.classList.remove('open');
+    menuButton.setAttribute('aria-expanded', 'false');
+  }
+});
+
+window.addEventListener('hashchange', renderRoute);
+document.querySelector('#current-year').textContent = new Date().getFullYear();
 
 fetch('./results.json')
-  .then(response => {
-    if (!response.ok) throw new Error('Could not load results');
-    return response.json();
-  })
-  .then(data => { students = data; })
-  .catch(() => {
-    initialState.innerHTML = '<div class="state-icon">!</div><h2>មិនអាចផ្ទុកទិន្នន័យបានទេ</h2><p>Please refresh and try again.</p>';
-  });
+  .then(response => { if (!response.ok) throw new Error('Could not load results'); return response.json(); })
+  .then(data => { students = Array.isArray(data) ? data : []; renderRoute(); })
+  .catch(() => { loadError = true; renderRoute(); });
 
 window.addEventListener('load', () => {
-  const telegram = window.Telegram && window.Telegram.WebApp;
-  if (telegram) {
-    telegram.ready();
-    telegram.expand();
-    if (telegram.setHeaderColor) telegram.setHeaderColor('#ffffff');
-    if (telegram.setBackgroundColor) telegram.setBackgroundColor('#f4f7fb');
-  }
+  const telegram = window.Telegram?.WebApp;
+  if (!telegram) return;
+  telegram.ready();
+  telegram.expand();
+  telegram.setHeaderColor?.('#ffffff');
+  telegram.setBackgroundColor?.('#f5f8fb');
 });

@@ -3,66 +3,89 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#ffffff" />
-    <meta name="description" content="Search Bac II exam results by student name or birthday." />
-    <meta property="og:title" content="Bac II Results | លទ្ធផលបាក់ឌុប" />
-    <meta property="og:description" content="Find your Bac II exam result by name or birthday." />
-    <meta property="og:image" content="./og.png" />
-    <title>Bac II Results | លទ្ធផលបាក់ឌុប</title>
+    <meta name="theme-color" content="#123f73" />
+    <meta name="description" content="Search BacII national examination results by student name, birthday, candidate number, or school." />
+    <meta property="og:title" content="BacII Result Finder | ស្វែងរកលទ្ធផលបាក់ឌុប" />
+    <meta property="og:description" content="A simple, Khmer-friendly way to search BacII examination records." />
+    <meta property="og:image" content="https://seth-lol.github.io/github-pages/og.png" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="BacII Result Finder | ស្វែងរកលទ្ធផលបាក់ឌុប" />
+    <meta name="twitter:description" content="A simple, Khmer-friendly way to search BacII examination records." />
+    <meta name="twitter:image" content="https://seth-lol.github.io/github-pages/og.png" />
+    <title>BacII Result Finder | ស្វែងរកលទ្ធផលបាក់ឌុប</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Noto+Sans+Khmer:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css" />
     <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
     <script src="./app.js" defer></script>
   </head>
   <body>
-    <main>
-      <header class="topbar">
-        <div class="topbar-inner">
-          <div class="brand-mark" aria-hidden="true">១២</div>
-          <div class="brand-copy">
-            <p>Bac II Results</p>
-            <strong>លទ្ធផលប្រឡងបាក់ឌុប</strong>
-          </div>
-          <span class="public-pill">Public</span>
-        </div>
-      </header>
+    <a class="skip-link" href="#app">រំលងទៅមាតិកា</a>
 
-      <section class="hero">
-        <div class="container">
-          <div class="year-pill"><span></span> ឆ្នាំសិក្សា ២០២៤–២០២៥</div>
-          <h1>រកមើលលទ្ធផល<br />ប្រឡងរបស់អ្នក</h1>
-          <p class="subtitle">Search by family name, given name, full name, or birthday.</p>
+    <header class="site-header" id="site-header">
+      <div class="shell header-inner">
+        <a class="brand" href="#home" aria-label="BacII Result Finder home">
+          <span class="brand-mark" aria-hidden="true"><span>ប</span><b>II</b></span>
+          <span class="brand-text">
+            <strong>ស្វែងរកលទ្ធផលបាក់ឌុប</strong>
+            <small>BacII Result Finder</small>
+          </span>
+        </a>
+        <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">
+          <span></span><span></span><span></span><span class="sr-only">បើកម៉ឺនុយ</span>
+        </button>
+        <nav class="primary-nav" id="primary-nav" aria-label="Primary navigation">
+          <a href="#home" data-route-link="home">ទំព័រដើម</a>
+          <a href="#students" data-route-link="students">ស្វែងរកសិស្ស</a>
+          <a href="#schools" data-route-link="schools">ស្វែងរកសាលា</a>
+          <a href="#about" data-route-link="about">អំពីយើង</a>
+          <a href="#contact" data-route-link="contact">ទំនាក់ទំនង</a>
+        </nav>
+      </div>
+    </header>
 
-          <form id="search-form" class="search-card">
-            <label class="sr-only" for="search-input">Search student results</label>
-            <div class="input-wrap">
-              <span aria-hidden="true">⌕</span>
-              <input id="search-input" type="search" autocomplete="off" enterkeyhint="search" placeholder="ឈ្មោះ ឬ ថ្ងៃខែឆ្នាំកំណើត" />
-            </div>
-            <button type="submit">ស្វែងរក</button>
-          </form>
-
-          <div class="examples">
-            <strong>សាកល្បង៖</strong>
-            <button type="button" data-example="ញ៉ែម">ញ៉ែម</button>
-            <button type="button" data-example="ដា សុធាវី">ដា សុធាវី</button>
-            <button type="button" data-example="២០ កក្កដា ០៧">២០ កក្កដា ០៧</button>
-          </div>
-        </div>
+    <main id="app" tabindex="-1">
+      <section class="loading-page shell" aria-live="polite">
+        <span class="spinner" aria-hidden="true"></span>
+        <p>កំពុងរៀបចំទិន្នន័យ…</p>
       </section>
-
-      <section id="results-section" class="container results" aria-live="polite">
-        <div id="initial-state" class="state-card">
-          <div class="state-icon">⌕</div>
-          <h2>បញ្ចូលព័ត៌មានដើម្បីស្វែងរក</h2>
-          <p>Your result will appear here. Your search stays on this device.</p>
-        </div>
-        <div id="results-content"></div>
-      </section>
-
-      <footer>
-        <strong>ប្រព័ន្ធស្វែងរកលទ្ធផលប្រឡងបាក់ឌុប</strong>
-        <p>Results are transcribed from published examination result sheets.</p>
-      </footer>
     </main>
+
+    <footer class="site-footer">
+      <div class="shell footer-grid">
+        <div class="footer-about">
+          <a class="brand brand-footer" href="#home">
+            <span class="brand-mark" aria-hidden="true"><span>ប</span><b>II</b></span>
+            <span class="brand-text"><strong>ស្វែងរកលទ្ធផលបាក់ឌុប</strong><small>BacII Result Finder</small></span>
+          </a>
+          <p>ជួយសិស្ស និងគ្រួសារ ស្វែងរកព័ត៌មានលទ្ធផលប្រឡងបានងាយស្រួល និងឆាប់រហ័ស។</p>
+        </div>
+        <div>
+          <h2>តំណភ្ជាប់</h2>
+          <a href="#students">ស្វែងរកសិស្ស</a>
+          <a href="#schools">ស្វែងរកសាលា</a>
+          <a href="#about">របៀបប្រើប្រាស់</a>
+        </div>
+        <div>
+          <h2>ជំនួយ</h2>
+          <a href="#contact">ទំនាក់ទំនង</a>
+          <a href="#report">រាយការណ៍ព័ត៌មានខុស</a>
+          <a href="#privacy">ឯកជនភាព</a>
+        </div>
+        <div>
+          <h2>ទំនាក់ទំនង</h2>
+          <a href="https://t.me/Iamnotaproplayer" target="_blank" rel="noreferrer">Telegram: @Iamnotaproplayer</a>
+          <a href="mailto:investingseth@gmail.com">investingseth@gmail.com</a>
+        </div>
+      </div>
+      <div class="shell footer-bottom">
+        <p>© <span id="current-year"></span> BacII Result Finder</p>
+        <p>វេទិកានេះមិនមែនជាសេវាផ្លូវការរបស់ក្រសួងទេ លុះត្រាតែមានការអនុញ្ញាតជាក់លាក់។</p>
+      </div>
+    </footer>
+
+    <noscript><div class="noscript">សូមបើក JavaScript ដើម្បីប្រើប្រព័ន្ធស្វែងរក។</div></noscript>
   </body>
 </html>
