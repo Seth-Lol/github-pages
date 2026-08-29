@@ -6,7 +6,7 @@ let language = localStorage.getItem('bacii-language') === 'en' ? 'en' : 'km';
 
 const english = new Map(Object.entries({
   'ស្វែងរកលទ្ធផលបាក់ឌុប': 'BacII Result Finder', 'លទ្ធផលបាក់ឌុប': 'BacII results',
-  'ទំព័រដើម': 'Home', 'ស្វែងរកសិស្ស': 'Student Search', 'ស្វែងរកសាលា': 'School Search', 'អំពីយើង': 'About', 'ទំនាក់ទំនង': 'Contact',
+  'ទំព័រដើម': 'Home', 'ស្វែងរកសិស្ស': 'Student Search', 'ស្វែងរកសាលា': 'School Search', 'អំពីយើង': 'About', 'ទំនាក់ទំនង': 'Contact', 'លទ្ធផលស្វែងរក': 'Search Result', 'សិស្ស': 'Students', 'ទាក់ទងផ្នែកជំនួយ': 'Contact Support',
   'តំណភ្ជាប់': 'Explore', 'របៀបប្រើប្រាស់': 'How to Search', 'ជំនួយ': 'Help', 'រាយការណ៍ព័ត៌មានខុស': 'Report Incorrect Information', 'ឯកជនភាព': 'Privacy',
   'ជួយសិស្ស និងគ្រួសារ ស្វែងរកព័ត៌មានលទ្ធផលប្រឡងបានងាយស្រួល និងឆាប់រហ័ស។': 'Helping students and families find examination results quickly and easily.',
   'វេទិកានេះមិនមែនជាសេវាផ្លូវការរបស់ក្រសួងទេ លុះត្រាតែមានការអនុញ្ញាតជាក់លាក់។': 'This platform is not an official Ministry service unless explicitly authorized.',
@@ -243,21 +243,34 @@ function stateCard(type, title, message, action = '') {
   return `<div class="state-card ${type === 'error' ? 'state-error' : ''}"><span class="state-symbol">${symbol}</span><h2>${title}</h2><p>${message}</p>${action}</div>`;
 }
 
-function renderHome() {
+function renderHome(params = new URLSearchParams()) {
   homeSearchType = 'name';
-  const schoolCount = new Set(students.map(student => student['School Name']).filter(Boolean)).size;
   app.innerHTML = `
     <section class="hero">
       <div class="shell hero-inner">
-        <p class="eyebrow">ទិន្នន័យលទ្ធផលប្រឡងឆ្នាំ ២០២០–២០២៥</p>
-        <h1>ស្វែងរក<span>លទ្ធផលបាក់ឌុប</span><br />បានងាយ និងរហ័ស</h1>
-        <p class="hero-lead">ស្វែងរកតាមឈ្មោះ ថ្ងៃខែឆ្នាំកំណើត លេខបេក្ខជន ឬសាលា។ គាំទ្រការស្វែងរកជាភាសាខ្មែរ និងប្រើបានល្អលើទូរស័ព្ទ។</p>
+        <div class="hero-copy">
+          <p class="eyebrow">ទិន្នន័យលទ្ធផលប្រឡងឆ្នាំ ២០២០–២០២៥</p>
+          <h1>${language === 'en' ? 'BACII Examination Results' : 'លទ្ធផលប្រឡងបាក់ឌុប'}</h1>
+          <p class="hero-lead">${language === 'en' ? 'Find your national exam results quickly and easily' : 'ស្វែងរកលទ្ធផលប្រឡងថ្នាក់ជាតិរបស់អ្នកបានរហ័ស និងងាយស្រួល'}</p>
+          <button class="btn btn-primary hero-search-button" id="hero-search-button" type="button"><span aria-hidden="true">⌕</span>${language === 'en' ? 'Search Results' : 'ស្វែងរកលទ្ធផល'}</button>
+        </div>
+        <div class="portal-illustration" role="img" aria-label="Education result document illustration">
+          <div class="illustration-orbit orbit-one"></div><div class="illustration-orbit orbit-two"></div>
+          <div class="result-document"><span class="document-cap" aria-hidden="true">🎓</span><div><i></i><i></i><i></i></div><strong>A</strong></div>
+          <span class="illustration-check" aria-hidden="true">✓</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="search-stage" id="home-search-card">
+      <div class="shell">
         <form class="home-search" id="home-search-form">
+          <div class="search-card-heading"><span aria-hidden="true">⌕</span><div><h2>${language === 'en' ? 'Search Examination Results' : 'ស្វែងរកលទ្ធផលប្រឡង'}</h2><p>${language === 'en' ? 'Choose one search method below' : 'ជ្រើសរើសវិធីស្វែងរកមួយខាងក្រោម'}</p></div></div>
           <div class="search-tabs" role="tablist" aria-label="ប្រភេទស្វែងរក">
-            <button class="search-tab active" type="button" data-search-type="name">ឈ្មោះសិស្ស</button>
-            <button class="search-tab" type="button" data-search-type="id">លេខបេក្ខជន</button>
-            <button class="search-tab" type="button" data-search-type="birthday">ថ្ងៃខែឆ្នាំកំណើត</button>
-            <button class="search-tab" type="button" data-search-type="school">ស្វែងរកសាលា</button>
+            <button class="search-tab active" type="button" role="tab" aria-selected="true" data-search-type="name">ឈ្មោះសិស្ស</button>
+            <button class="search-tab" type="button" role="tab" aria-selected="false" data-search-type="id">លេខបេក្ខជន</button>
+            <button class="search-tab" type="button" role="tab" aria-selected="false" data-search-type="birthday">ថ្ងៃខែឆ្នាំកំណើត</button>
+            <button class="search-tab" type="button" role="tab" aria-selected="false" data-search-type="school">ស្វែងរកសាលា</button>
           </div>
           <div class="home-search-body">
             <div id="home-standard-search">
@@ -280,15 +293,26 @@ function renderHome() {
       </div>
     </section>
 
+    <section class="section statistics-section">
+      <div class="shell">
+        <div class="section-heading"><p class="section-kicker">${language === 'en' ? 'National coverage' : 'ទិន្នន័យទូទាំងប្រទេស'}</p><h2>${language === 'en' ? 'BACII Results at a Glance' : 'ទិន្នន័យលទ្ធផលបាក់ឌុបសង្ខេប'}</h2></div>
+        <div class="stats-grid portal-stats"><article class="stat"><span class="stat-icon" aria-hidden="true">ST</span><strong>500K+</strong><span>${language === 'en' ? 'Students' : 'សិស្ស'}</span></article><article class="stat"><span class="stat-icon" aria-hidden="true">SC</span><strong>1200+</strong><span>${language === 'en' ? 'Schools' : 'សាលារៀន'}</span></article><article class="stat"><span class="stat-icon" aria-hidden="true">PV</span><strong>25</strong><span>${language === 'en' ? 'Provinces' : 'រាជធានី-ខេត្ត'}</span></article></div>
+      </div>
+    </section>
+
     <section class="section section-alt">
       <div class="shell">
         <div class="section-heading"><p class="section-kicker">របៀបប្រើប្រាស់</p><h2>ត្រឹមតែ ៣ ជំហាន</h2></div>
         <div class="steps"><div class="step"><h3>បញ្ចូលព័ត៌មាន</h3><p>វាយឈ្មោះ ថ្ងៃកំណើត លេខបេក្ខជន ឬសាលា។</p></div><div class="step"><h3>ស្វែងរកកំណត់ត្រា</h3><p>ប្រព័ន្ធនឹងផ្គូផ្គងព័ត៌មានជាមួយទិន្នន័យដែលមាន។</p></div><div class="step"><h3>មើលលទ្ធផល</h3><p>បើកព័ត៌មានលម្អិត និងមើលនិទ្ទេសតាមមុខវិជ្ជា។</p></div></div>
-        <div class="stats-grid"><div class="stat"><strong>${khmerNumber(students.length)}</strong><span>កំណត់ត្រាសិស្ស</span></div><div class="stat"><strong>${khmerNumber(schoolCount)}</strong><span>សាលារៀន</span></div><div class="stat"><strong>${language === 'km' ? '២០២០–២០២៥' : '2020–2025'}</strong><span>ឆ្នាំប្រឡងដែលគាំទ្រ</span></div></div>
       </div>
     </section>
-    <section class="section"><div class="shell"><div class="notice"><span class="notice-icon">i</span><div><h2>ព័ត៌មានសំខាន់</h2><p>វេទិកានេះជាឧបករណ៍ស្វែងរកឯករាជ្យ និងមិនមែនជាគេហទំព័រផ្លូវការរបស់ក្រសួងអប់រំទេ។ សូមផ្ទៀងផ្ទាត់ព័ត៌មានសំខាន់ជាមួយប្រភពផ្លូវការ។</p></div></div></div></section>`;
+    <section class="section"><div class="shell"><div class="notice"><span class="notice-icon">i</span><div><h2>ព័ត៌មានសំខាន់</h2><p>វេទិកានេះជាឧបករណ៍ស្វែងរកឯករាជ្យ និងមិនមែនជាគេហទំព័រផ្លូវការរបស់ក្រសួងអប់រំទេ។ សូមផ្ទៀងផ្ទាត់ព័ត៌មានសំខាន់ជាមួយប្រភពផ្លូវការ។</p></div></div></div></section>
+    <section class="section contact-section" id="home-contact"><div class="shell"><div class="contact-heading"><p class="section-kicker">${language === 'en' ? 'Contact' : 'ទំនាក់ទំនង'}</p><h2>${language === 'en' ? 'Need Help or Want to Register Your School?' : 'ត្រូវការជំនួយ ឬចង់ចុះឈ្មោះសាលារបស់អ្នក?'}</h2><p>${language === 'en' ? 'Schools can contact us to update information or request support.' : 'សាលារៀនអាចទាក់ទងមកយើង ដើម្បីកែប្រែព័ត៌មាន ឬស្នើសុំជំនួយ។'}</p></div><div class="contact-cards"><a class="contact-card" href="https://t.me/Iamnotaproplayer" target="_blank" rel="noreferrer"><span>TG</span><div><small>Telegram</small><strong>@Iamnotaproplayer</strong></div><b>→</b></a><a class="contact-card" href="mailto:investingseth@gmail.com"><span>@</span><div><small>Email</small><strong>investingseth@gmail.com</strong></div><b>→</b></a></div></div></section>`;
   bindHomeSearch();
+  document.querySelector('#hero-search-button').addEventListener('click', () => document.querySelector('#home-search-card').scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  if (params.get('tab') === 'school') document.querySelector('[data-search-type="school"]').click();
+  const target = params.get('section') === 'contact' ? '#home-contact' : (params.get('focus') === 'search' || params.get('tab') === 'school') ? '#home-search-card' : '';
+  if (target) requestAnimationFrame(() => document.querySelector(target)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
 }
 
 function bindHomeSearch() {
@@ -300,7 +324,11 @@ function bindHomeSearch() {
   };
   document.querySelectorAll('[data-search-type]').forEach(button => button.addEventListener('click', () => {
     homeSearchType = button.dataset.searchType;
-    document.querySelectorAll('[data-search-type]').forEach(tab => tab.classList.toggle('active', tab === button));
+    document.querySelectorAll('[data-search-type]').forEach(tab => {
+      const active = tab === button;
+      tab.classList.toggle('active', active);
+      tab.setAttribute('aria-selected', String(active));
+    });
     const standardSearch = document.querySelector('#home-standard-search');
     const schoolPanel = document.querySelector('#school-management-panel');
     const schoolMode = homeSearchType === 'school';
@@ -437,11 +465,12 @@ function drawResults(params) {
 function renderStudentDetail(index) {
   const student = students[Number(index)];
   if (!student) { renderNotFound(); return; }
+  const totalScore = getValue(student, 'Total Score', 'Total', 'Score Total');
   const scores = Object.entries(subjectLabels).map(([key, [khmer, english]]) => `<tr><td><strong>${khmer}</strong><br><span class="meta-label">${english}</span></td><td><span class="grade-badge">${escapeHtml(student.Scores?.[key] || '—')}</span></td></tr>`).join('');
   app.innerHTML = `${pageHero('លទ្ធផលសិស្ស', 'ព័ត៌មានលម្អិតពីកំណត់ត្រា និងនិទ្ទេសតាមមុខវិជ្ជា។', [['#students', 'ស្វែងរកសិស្ស'], ['#student', escapeHtml(student.Name)]])}
     <section class="page-content"><div class="shell detail-grid">
-      <article class="detail-card"><div class="result-identity"><div class="result-grade">${escapeHtml(student.Grade || '—')}</div><div><div class="detail-status-row"><span class="status-badge ${normalize(student['Total Result']).includes('ធ្លាក់') ? 'failed' : ''}">${escapeHtml(student['Total Result'] || 'មិនមានទិន្នន័យ')}</span><span class="year-badge">ឆ្នាំ ${escapeHtml(khmerNumber(studentYear(student)))}</span></div><h1>${escapeHtml(student.Name)}</h1><p>${escapeHtml(student['School Name'] || 'មិនមានទិន្នន័យសាលា')}</p></div></div>
-        <div class="detail-fields"><div class="detail-field"><span class="meta-label">លេខបេក្ខជន</span><span class="meta-value">${escapeHtml(studentId(student) || 'មិនមានទិន្នន័យ')}</span></div><div class="detail-field"><span class="meta-label">ថ្ងៃខែឆ្នាំកំណើត</span><span class="meta-value">${escapeHtml(student.Birthday || 'មិនមានទិន្នន័យ')}</span></div><div class="detail-field"><span class="meta-label">រាជធានី / ខេត្ត</span><span class="meta-value">${escapeHtml(studentProvince(student) || 'មិនមានទិន្នន័យ')}</span></div><div class="detail-field"><span class="meta-label">មណ្ឌលប្រឡង</span><span class="meta-value">${escapeHtml(studentCenter(student) || 'មិនមានទិន្នន័យ')}</span></div></div>
+      <article class="detail-card official-result-card"><div class="result-document-label"><span aria-hidden="true">🎓</span>${language === 'en' ? 'Student Result' : 'លទ្ធផលសិស្ស'}</div><div class="result-identity"><div class="result-grade">${escapeHtml(student.Grade || '—')}</div><div><div class="detail-status-row"><span class="status-badge ${normalize(student['Total Result']).includes('ធ្លាក់') ? 'failed' : ''}">${escapeHtml(student['Total Result'] || 'មិនមានទិន្នន័យ')}</span><span class="year-badge">ឆ្នាំ ${escapeHtml(khmerNumber(studentYear(student)))}</span></div><h1>${escapeHtml(student.Name)}</h1><p>${escapeHtml(student['School Name'] || 'មិនមានទិន្នន័យសាលា')}</p></div></div>
+        <div class="detail-fields"><div class="detail-field"><span class="meta-label">លេខបេក្ខជន</span><span class="meta-value">${escapeHtml(studentId(student) || 'មិនមានទិន្នន័យ')}</span></div><div class="detail-field"><span class="meta-label">ថ្ងៃខែឆ្នាំកំណើត</span><span class="meta-value">${escapeHtml(student.Birthday || 'មិនមានទិន្នន័យ')}</span></div><div class="detail-field"><span class="meta-label">រាជធានី / ខេត្ត</span><span class="meta-value">${escapeHtml(studentProvince(student) || 'មិនមានទិន្នន័យ')}</span></div><div class="detail-field"><span class="meta-label">មណ្ឌលប្រឡង</span><span class="meta-value">${escapeHtml(studentCenter(student) || 'មិនមានទិន្នន័យ')}</span></div><div class="detail-field total-score-field"><span class="meta-label">${language === 'en' ? 'Total Score' : 'ពិន្ទុសរុប'}</span><span class="meta-value">${escapeHtml(totalScore || (language === 'en' ? 'Not available' : 'មិនមានទិន្នន័យ'))}</span></div><div class="detail-field"><span class="meta-label">${language === 'en' ? 'Grade' : 'និទ្ទេស'}</span><span class="meta-value"><span class="grade-badge">${escapeHtml(student.Grade || '—')}</span></span></div></div>
         <div class="score-section"><h2>និទ្ទេសតាមមុខវិជ្ជា</h2><table class="score-table"><thead><tr><th>មុខវិជ្ជា</th><th>និទ្ទេស</th></tr></thead><tbody>${scores}</tbody></table></div>
       </article>
       <aside class="side-card-wrap"><div class="side-card"><h2>ព័ត៌មានប្រភព</h2><p>កំណត់ត្រានេះត្រូវបានដកស្រង់ពីទំព័រ ${escapeHtml(khmerNumber(student['Page Number'] || '—'))} នៃឯកសារលទ្ធផល។ សូមផ្ទៀងផ្ទាត់ជាមួយប្រភពផ្លូវការ។</p></div><div class="side-card"><h2>រកឃើញព័ត៌មានខុស?</h2><p>សូមផ្ញើឈ្មោះ និងព័ត៌មានដែលត្រូវកែ ដើម្បីឱ្យយើងពិនិត្យឡើងវិញ។</p><a class="btn btn-danger-light" href="mailto:investingseth@gmail.com?subject=Report incorrect BacII information">រាយការណ៍ព័ត៌មានខុស</a></div></aside>
@@ -470,7 +499,7 @@ function renderRoute() {
   setActiveNavigation(path);
   if (loadError) { renderLoadError(); applyLanguage(); return; }
   const [root, rest] = path.split('/');
-  if (root === 'home') renderHome();
+  if (root === 'home') renderHome(params);
   else if (root === 'students') renderStudentSearch();
   else if (root === 'results') renderResults(params);
   else if (root === 'student') renderStudentDetail(rest);
@@ -478,7 +507,8 @@ function renderRoute() {
   else if (root === 'privacy' || root === 'disclaimer') renderPolicy(root);
   else renderNotFound();
   applyLanguage();
-  requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+  const hasHomeTarget = root === 'home' && (params.get('section') || params.get('focus') || params.get('tab'));
+  if (!hasHomeTarget) requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'instant' }));
 }
 
 menuButton.addEventListener('click', () => {
