@@ -258,16 +258,23 @@ function renderHome() {
             <button class="search-tab active" type="button" data-search-type="name">ឈ្មោះសិស្ស</button>
             <button class="search-tab" type="button" data-search-type="id">លេខបេក្ខជន</button>
             <button class="search-tab" type="button" data-search-type="birthday">ថ្ងៃខែឆ្នាំកំណើត</button>
+            <button class="search-tab" type="button" data-search-type="school">ស្វែងរកសាលា</button>
           </div>
           <div class="home-search-body">
-            <label for="home-query" id="home-search-label">ឈ្មោះពេញ ឬផ្នែកណាមួយនៃឈ្មោះ</label>
-            <div class="home-search-row">
-              <div class="home-year"><label class="sr-only" for="home-year">ឆ្នាំប្រឡង</label><select id="home-year" name="year" aria-label="ឆ្នាំប្រឡង">${yearOptions('2025')}</select></div>
-              <div class="input-with-icon"><span class="input-symbol" aria-hidden="true">⌕</span><input id="home-query" name="query" autocomplete="off" enterkeyhint="search" placeholder="ឧ. ឈុំ សុខរិទ្ធ" required /></div>
-              <button class="btn btn-primary" type="submit">ស្វែងរកឥឡូវ</button>
+            <div id="home-standard-search">
+              <label for="home-query" id="home-search-label">ឈ្មោះពេញ ឬផ្នែកណាមួយនៃឈ្មោះ</label>
+              <div class="home-search-row">
+                <div class="home-year"><label class="sr-only" for="home-year">ឆ្នាំប្រឡង</label><select id="home-year" name="year" aria-label="ឆ្នាំប្រឡង">${yearOptions('2025')}</select></div>
+                <div class="input-with-icon"><span class="input-symbol" aria-hidden="true">⌕</span><input id="home-query" name="query" autocomplete="off" enterkeyhint="search" placeholder="ឧ. ឈុំ សុខរិទ្ធ" required /></div>
+                <button class="btn btn-primary" type="submit">ស្វែងរកឥឡូវ</button>
+              </div>
+              <p class="search-hint" id="home-search-hint">អាចវាយនាមត្រកូល នាមខ្លួន ឬឈ្មោះពេញ។</p>
+              <a class="advanced-link" href="#students">ស្វែងរកកម្រិតខ្ពស់</a>
             </div>
-            <p class="search-hint" id="home-search-hint">អាចវាយនាមត្រកូល នាមខ្លួន ឬឈ្មោះពេញ។</p>
-            <a class="advanced-link" href="#students">ស្វែងរកកម្រិតខ្ពស់</a>
+            <div class="school-management-panel" id="school-management-panel" hidden>
+              <span class="quick-icon">សាលា</span>
+              <div><h2>សម្រាប់គណៈគ្រប់គ្រងសាលា</h2><p>ប្រសិនបើក្រុមគ្រប់គ្រងសាលាចង់ស្វែងរកឈ្មោះសិស្សបានងាយស្រួល សូមទាក់ទងមកខ្ញុំ។</p><div class="school-contact-actions"><a href="https://t.me/Iamnotaproplayer" target="_blank" rel="noreferrer">Telegram</a><a href="mailto:investingseth@gmail.com">Email</a></div></div>
+            </div>
           </div>
         </form>
       </div>
@@ -279,7 +286,6 @@ function renderHome() {
         <div class="quick-grid">
           <a class="quick-card" href="#students"><span class="quick-icon">នាម</span><h3>ស្វែងរកសិស្ស</h3><p>ប្រើឈ្មោះ ថ្ងៃកំណើត លេខបេក្ខជន ឬបញ្ចូលតម្រងរួមគ្នា។</p><span class="card-arrow">→</span></a>
           <a class="quick-card" href="#students"><span class="quick-icon">ID</span><h3>ស្វែងរកលេខបេក្ខជន</h3><p>ស្វែងរកកំណត់ត្រាជាក់លាក់ដោយលេខសម្គាល់បេក្ខជន ប្រសិនបើមានក្នុងទិន្នន័យ។</p><span class="card-arrow">→</span></a>
-          <article class="quick-card school-contact-card"><span class="quick-icon">សាលា</span><h3>សម្រាប់គណៈគ្រប់គ្រងសាលា</h3><p>ប្រសិនបើក្រុមគ្រប់គ្រងសាលាចង់ស្វែងរកឈ្មោះសិស្សបានងាយស្រួល សូមទាក់ទងមកខ្ញុំ។</p><div class="school-contact-actions"><a href="https://t.me/Iamnotaproplayer" target="_blank" rel="noreferrer">Telegram</a><a href="mailto:investingseth@gmail.com">Email</a></div></article>
         </div>
       </div>
     </section>
@@ -305,6 +311,15 @@ function bindHomeSearch() {
   document.querySelectorAll('[data-search-type]').forEach(button => button.addEventListener('click', () => {
     homeSearchType = button.dataset.searchType;
     document.querySelectorAll('[data-search-type]').forEach(tab => tab.classList.toggle('active', tab === button));
+    const standardSearch = document.querySelector('#home-standard-search');
+    const schoolPanel = document.querySelector('#school-management-panel');
+    const schoolMode = homeSearchType === 'school';
+    standardSearch.hidden = schoolMode;
+    schoolPanel.hidden = !schoolMode;
+    if (schoolMode) {
+      applyLanguage();
+      return;
+    }
     const input = document.querySelector('#home-query');
     document.querySelector('#home-search-label').textContent = config[homeSearchType][0];
     input.placeholder = config[homeSearchType][1];
@@ -316,6 +331,7 @@ function bindHomeSearch() {
   }));
   document.querySelector('#home-search-form').addEventListener('submit', event => {
     event.preventDefault();
+    if (homeSearchType === 'school') return;
     const query = document.querySelector('#home-query').value.trim();
     const year = document.querySelector('#home-year').value;
     if (!query) return;
