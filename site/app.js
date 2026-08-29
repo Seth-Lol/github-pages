@@ -1,6 +1,87 @@
 const app = document.querySelector('#app');
 const menuButton = document.querySelector('#menu-toggle');
 const navigation = document.querySelector('#primary-nav');
+const EXAM_YEARS = ['2025', '2024', '2023', '2022', '2021', '2020'];
+let language = localStorage.getItem('bacii-language') === 'en' ? 'en' : 'km';
+
+const english = new Map(Object.entries({
+  'ស្វែងរកលទ្ធផលបាក់ឌុប': 'BacII Result Finder', 'លទ្ធផលបាក់ឌុប': 'BacII results',
+  'ទំព័រដើម': 'Home', 'ស្វែងរកសិស្ស': 'Student Search', 'ស្វែងរកសាលា': 'School Search', 'អំពីយើង': 'About', 'ទំនាក់ទំនង': 'Contact',
+  'តំណភ្ជាប់': 'Explore', 'របៀបប្រើប្រាស់': 'How to Search', 'ជំនួយ': 'Help', 'រាយការណ៍ព័ត៌មានខុស': 'Report Incorrect Information', 'ឯកជនភាព': 'Privacy',
+  'ជួយសិស្ស និងគ្រួសារ ស្វែងរកព័ត៌មានលទ្ធផលប្រឡងបានងាយស្រួល និងឆាប់រហ័ស។': 'Helping students and families find examination results quickly and easily.',
+  'វេទិកានេះមិនមែនជាសេវាផ្លូវការរបស់ក្រសួងទេ លុះត្រាតែមានការអនុញ្ញាតជាក់លាក់។': 'This platform is not an official Ministry service unless explicitly authorized.',
+  'ទិន្នន័យលទ្ធផលប្រឡងឆ្នាំ ២០២០–២០២៥': 'Examination records from 2020–2025',
+  'ស្វែងរកលទ្ធផលបាក់ឌុបបានងាយ និងរហ័ស': 'Find BacII results quickly and easily',
+  'ស្វែងរកតាមឈ្មោះ ថ្ងៃខែឆ្នាំកំណើត លេខបេក្ខជន ឬសាលា។ គាំទ្រការស្វែងរកជាភាសាខ្មែរ និងប្រើបានល្អលើទូរស័ព្ទ។': 'Search by name, date of birth, candidate number, or school. Khmer names are fully supported on mobile and desktop.',
+  'ឈ្មោះសិស្ស': 'Student name', 'លេខបេក្ខជន': 'Candidate number', 'ថ្ងៃខែឆ្នាំកំណើត': 'Date of birth', 'សាលារៀន': 'School',
+  'ឆ្នាំប្រឡង': 'Exam year', 'គ្រប់ឆ្នាំ': 'All years', 'ស្វែងរកឥឡូវ': 'Search now', 'ស្វែងរកកម្រិតខ្ពស់': 'Advanced search',
+  'ឈ្មោះពេញ ឬផ្នែកណាមួយនៃឈ្មោះ': 'Full name or part of a name', 'អាចវាយនាមត្រកូល នាមខ្លួន ឬឈ្មោះពេញ។': 'Enter a family name, given name, or full name.',
+  'លេខបេក្ខជន / លេខសម្គាល់': 'Candidate / student ID', 'បញ្ចូលលេខជាខ្មែរ ឬអង់គ្លេស។': 'Enter Khmer or English numerals.',
+  'វាយតាមទម្រង់ដែលបានបោះពុម្ពក្នុងបញ្ជីលទ្ធផល។': 'Use the format printed in the examination record.',
+  'ឈ្មោះសាលារៀន': 'School name', 'វាយឈ្មោះពេញ ឬផ្នែកណាមួយនៃឈ្មោះសាលា។': 'Enter a full school name or part of it.',
+  'ស្វែងរករហ័ស': 'Quick search', 'ជ្រើសរើសវិធីដែលងាយសម្រាប់អ្នក': 'Choose the easiest way to search',
+  'ចាប់ផ្តើមដោយព័ត៌មានតែមួយ ឬប្រើតម្រងច្រើនដើម្បីទទួលបានលទ្ធផលកាន់តែច្បាស់។': 'Start with one detail or combine filters for more accurate results.',
+  'ស្វែងរកកម្រិតខ្ពស់': 'Advanced student search', 'ស្វែងរកលេខបេក្ខជន': 'Search by candidate number',
+  'ប្រើឈ្មោះ ថ្ងៃកំណើត លេខបេក្ខជន ឬបញ្ចូលតម្រងរួមគ្នា។': 'Use a name, birthday, candidate number, or combined filters.',
+  'ស្វែងរកកំណត់ត្រាជាក់លាក់ដោយលេខសម្គាល់បេក្ខជន ប្រសិនបើមានក្នុងទិន្នន័យ។': 'Find a specific record using its candidate number when available.',
+  'រកសាលារៀន ហើយមើលបញ្ជីសិស្ស និងលទ្ធផលដែលមាន។': 'Find a school and browse its available students and results.',
+  'ត្រឹមតែ ៣ ជំហាន': 'Only 3 steps', 'បញ្ចូលព័ត៌មាន': 'Enter information', 'ស្វែងរកកំណត់ត្រា': 'Search records', 'មើលលទ្ធផល': 'View the result',
+  'វាយឈ្មោះ ថ្ងៃកំណើត លេខបេក្ខជន ឬសាលា។': 'Enter a name, birthday, candidate number, or school.',
+  'ប្រព័ន្ធនឹងផ្គូផ្គងព័ត៌មានជាមួយទិន្នន័យដែលមាន។': 'The system matches your details with available records.',
+  'បើកព័ត៌មានលម្អិត និងមើលនិទ្ទេសតាមមុខវិជ្ជា។': 'Open the record to view grades by subject.',
+  'កំណត់ត្រាសិស្ស': 'Student records', 'ឆ្នាំប្រឡងដែលគាំទ្រ': 'Supported exam years', 'ព័ត៌មានសំខាន់': 'Important information',
+  'វេទិកានេះជាឧបករណ៍ស្វែងរកឯករាជ្យ និងមិនមែនជាគេហទំព័រផ្លូវការរបស់ក្រសួងអប់រំទេ។ សូមផ្ទៀងផ្ទាត់ព័ត៌មានសំខាន់ជាមួយប្រភពផ្លូវការ។': 'This is an independent search tool, not an official Ministry of Education website. Verify important information with an official source.',
+  'ប្រើព័ត៌មានតែមួយ ឬបញ្ចូលតម្រងច្រើន ដើម្បីស្វែងរកលទ្ធផលបានត្រឹមត្រូវជាងមុន។': 'Use one detail or combine several filters for a more accurate search.',
+  'ព័ត៌មានសម្រាប់ស្វែងរក': 'Search information', 'អ្នកមិនចាំបាច់បំពេញគ្រប់ប្រអប់ទាំងអស់ទេ។': 'You do not need to complete every field.',
+  'ឈ្មោះពេញ': 'Full name', 'នាមត្រកូល': 'Family name', 'នាមខ្លួន': 'Given name', 'រាជធានី / ខេត្ត': 'Province / city', 'មណ្ឌលប្រឡង': 'Exam center',
+  'គាំទ្រឈ្មោះជាភាសាខ្មែរ': 'Khmer names are supported', 'ប្រសិនបើមានក្នុងទិន្នន័យ': 'When available in the data',
+  'សម្អាតតម្រង': 'Reset filters', 'ស្វែងរកលទ្ធផល': 'Search results', 'គន្លឹះស្វែងរក': 'Search tips',
+  'បើរកមិនឃើញ សាកល្បងវាយតែនាមត្រកូល ឬផ្នែកខ្លីមួយនៃឈ្មោះ។ ថ្ងៃកំណើតគួរតែវាយតាមទម្រង់ដូចក្នុងបញ្ជីប្រឡង។': 'If no result appears, try only the family name or a shorter part of the name. Enter the birthday as printed in the result list.',
+  'លទ្ធផលផ្គូផ្គងសម្រាប់': 'Matches for', 'លទ្ធផលសិស្សដែលមានក្នុងប្រព័ន្ធ។': 'Student results available in the system.',
+  'ឈ្មោះ': 'Name', 'ថ្ងៃកំណើត': 'Date of birth', 'ឆ្នាំ': 'Year', 'និទ្ទេស': 'Grade', 'លទ្ធផល': 'Result', 'មើលលម្អិត →': 'View details →',
+  'តម្រៀបតាម': 'Sort by', 'មើលលទ្ធផលលម្អិត': 'View full result', 'រកមិនឃើញលទ្ធផល': 'No results found',
+  'សូមពិនិត្យអក្ខរាវិរុទ្ធ សាកល្បងផ្នែកខ្លីនៃឈ្មោះ ឬកាត់បន្ថយចំនួនតម្រង។': 'Check the spelling, try a shorter name, or use fewer filters.',
+  'កែប្រែការស្វែងរក': 'Edit search', 'លទ្ធផលសិស្ស': 'Student result', 'ព័ត៌មានលម្អិតពីកំណត់ត្រា និងនិទ្ទេសតាមមុខវិជ្ជា។': 'Detailed record and subject grades.',
+  'មិនមានទិន្នន័យ': 'Not available', 'និទ្ទេសតាមមុខវិជ្ជា': 'Subject grades', 'មុខវិជ្ជា': 'Subject', 'ព័ត៌មានប្រភព': 'Source information',
+  'មើលសាលានេះ': 'View this school', 'រកឃើញព័ត៌មានខុស?': 'Found incorrect information?', 'រាយការណ៍កំហុស': 'Report an error',
+  'ស្វែងរកសាលារៀន': 'School Search', 'ស្វែងរកសាលា ហើយមើលកំណត់ត្រាសិស្សដែលមានសម្រាប់សាលានោះ។': 'Find a school and browse its available student records.',
+  'វាយឈ្មោះសាលា': 'Enter a school name', 'ស្វែងរកសាលា': 'Search schools', 'ជ្រើសរើសសាលាដើម្បីមើលបញ្ជីសិស្ស': 'Choose a school to view its students',
+  'ទីតាំង:': 'Location:', 'មើលសាលា →': 'View school →', 'រកមិនឃើញសាលា': 'No schools found',
+  'សាកល្បងផ្នែកខ្លីនៃឈ្មោះសាលា ឬសម្អាតតម្រង។': 'Try a shorter school name or clear the filters.',
+  'ព័ត៌មានសាលា': 'School details', 'មើលកំណត់ត្រាសិស្សដែលមាន និងស្វែងរកក្នុងសាលានេះ។': 'Browse available student records and search within this school.',
+  'សាលា': 'School', 'ស្វែងរកក្នុងសាលា': 'Search within this school', 'គ្រប់និទ្ទេស': 'All grades', 'សម្អាត': 'Reset', 'អនុវត្តតម្រង': 'Apply filters',
+  'កំណត់ត្រាដែលផ្គូផ្គងតម្រង': 'Records matching the filters', 'មិនមានកំណត់ត្រាផ្គូផ្គង': 'No matching records',
+  'សូមសម្អាតតម្រង ឬសាកល្បងឈ្មោះផ្សេង។': 'Clear the filters or try another name.',
+  'អំពីវេទិកា': 'About the platform', 'ស្វែងយល់ពីគោលបំណង ប្រភពទិន្នន័យ និងរបៀបប្រើប្រាស់ប្រព័ន្ធ។': 'Learn about the purpose, data sources, and how to use the platform.',
+  'ទំនាក់ទំនង និងជំនួយ': 'Contact and support', 'ផ្ញើ Email': 'Send email', 'ទាក់ទងតាម Telegram': 'Contact on Telegram',
+  'ការបដិសេធ': 'Disclaimer', 'រកមិនឃើញទំព័រ': 'Page not found', 'ត្រឡប់ទៅទំព័រដើម': 'Return home',
+  'មិនអាចផ្ទុកទិន្នន័យបាន': 'Unable to load data', 'ផ្ទុកឡើងវិញ': 'Reload', 'បើកម៉ឺនុយ': 'Open menu',
+  'ស្វែងរក': 'Find', 'បានងាយ និងរហ័ស': 'quickly and easily',
+  'វេទិកានេះធ្វើអ្វី?': 'What does this platform do?',
+  'BacII Result Finder ជួយសិស្ស ឪពុកម្តាយ និងសាលារៀន ស្វែងរកកំណត់ត្រាលទ្ធផលប្រឡងបាក់ឌុបដែលបានបញ្ចូលក្នុងប្រព័ន្ធ។ អ្នកអាចស្វែងរកដោយឈ្មោះ ថ្ងៃកំណើត លេខបេក្ខជន ឬសាលារៀន។': 'BacII Result Finder helps students, parents, and schools search the BacII examination records available in the system. Search by name, birthday, candidate number, or school.',
+  'របៀបស្វែងរក': 'How to search', 'ជ្រើសរើសការស្វែងរកសិស្ស ឬសាលា។': 'Choose student search or school search.', 'បញ្ចូលព័ត៌មានយ៉ាងហោចណាស់មួយ។': 'Enter at least one piece of information.',
+  'ប្រៀបធៀបឈ្មោះ ថ្ងៃកំណើត និងសាលា ដើម្បីកំណត់អត្តសញ្ញាណកំណត់ត្រាត្រឹមត្រូវ។': 'Compare the name, birthday, and school to identify the correct record.',
+  'បើក “មើលលម្អិត” ដើម្បីមើលនិទ្ទេសតាមមុខវិជ្ជា។': 'Open “View details” to see grades by subject.',
+  'ប្រភព និងការបដិសេធ': 'Data source and disclaimer',
+  'ទិន្នន័យត្រូវបានដកស្រង់ពីសន្លឹកលទ្ធផលប្រឡងដែលបានផ្សព្វផ្សាយ។ កំហុសអាចកើតឡើងក្នុងដំណើរការបញ្ចូល ឬអានអក្សរ។ វេទិកានេះមិនអះអាងថាជាសេវាផ្លូវការរបស់ក្រសួងទេ ហើយព័ត៌មានសំខាន់គួរតែផ្ទៀងផ្ទាត់ជាមួយប្រភពផ្លូវការ។': 'Data is transcribed from published examination sheets. Typing or text-recognition errors may occur. This platform is not an official Ministry service; verify important information with an official source.',
+  'ប្រព័ន្ធបង្ហាញតែព័ត៌មានដែលចាំបាច់សម្រាប់បែងចែកលទ្ធផលសិស្ស។ មិនមានការចូលគណនី ឬការផ្ទៀងផ្ទាត់អត្តសញ្ញាណទេ ហើយយើងជៀសវាងការបង្ហាញព័ត៌មានផ្ទាល់ខ្លួនដែលមិនចាំបាច់។': 'The system displays only information needed to distinguish student results. No login or identity verification is required, and unnecessary personal information is avoided.',
+  'ត្រូវការជំនួយ?': 'Need help?', 'ទាក់ទងមកយើង ប្រសិនបើអ្នករកមិនឃើញកំណត់ត្រា ឬមិនដឹងរបៀបស្វែងរក។': 'Contact us if you cannot find a record or need help searching.', 'ទាក់ទងមកយើង': 'Contact us',
+  'ព័ត៌មានមិនត្រឹមត្រូវ?': 'Incorrect information?', 'ផ្ញើព័ត៌មានលម្អិតដើម្បីឱ្យយើងអាចពិនិត្យកំណត់ត្រាឡើងវិញ។': 'Send the details so we can review the record.',
+  'ផ្ញើព័ត៌មានកំណត់ត្រាដែលមិនត្រឹមត្រូវ ដើម្បីឱ្យយើងពិនិត្យឡើងវិញ។': 'Send details about an incorrect record for review.',
+  'ត្រូវការជំនួយក្នុងការស្វែងរក? អ្នកអាចទាក់ទងមកយើងតាម Telegram ឬ Email។': 'Need help searching? Contact us on Telegram or by email.',
+  'សម្រាប់សំណួររហ័ស និងការរាយការណ៍ព័ត៌មាន។': 'For quick questions and information reports.', 'សម្រាប់ព័ត៌មានលម្អិត ឬភ្ជាប់ឯកសារយោង។': 'For detailed messages or reference attachments.',
+  'ព័ត៌មានដែលគួរផ្ញើមក': 'Information to include', 'រាយការណ៍ព័ត៌មានមិនត្រឹមត្រូវ': 'Report incorrect information',
+  'សូមបញ្ចូលឈ្មោះសិស្ស សាលា ឆ្នាំប្រឡង លេខទំព័រ (ប្រសិនបើមាន) និងពន្យល់ពីព័ត៌មានដែលត្រូវកែ។ កុំផ្ញើព័ត៌មានផ្ទាល់ខ្លួនដែលមិនចាំបាច់។': 'Include the student name, school, exam year, page number when available, and explain what should be corrected. Do not send unnecessary personal information.',
+  'បើឈ្មោះ ថ្ងៃកំណើត សាលា ឬនិទ្ទេសមិនត្រឹមត្រូវ សូមផ្ញើតំណភ្ជាប់កំណត់ត្រា និងពន្យល់ពីចំណុចដែលត្រូវពិនិត្យ។': 'If a name, birthday, school, or grade is incorrect, send the record link and explain what should be reviewed.',
+  'ចាប់ផ្តើមរាយការណ៍': 'Start a report', 'មើលការណែនាំរាយការណ៍': 'View reporting guidance',
+  'របៀបដែលវេទិកាគោរពឯកជនភាពរបស់អ្នកប្រើប្រាស់។': 'How the platform respects user privacy.', 'ព័ត៌មានសំខាន់អំពីភាពត្រឹមត្រូវ និងស្ថានភាពរបស់វេទិកា។': 'Important information about accuracy and the status of this platform.',
+  'ការស្វែងរករបស់អ្នក': 'Your searches', 'ព័ត៌មានសិស្ស': 'Student information', 'មិនមែនជាសេវាផ្លូវការ': 'Not an official service', 'ភាពត្រឹមត្រូវនៃទិន្នន័យ': 'Data accuracy',
+  'វេទិកានេះមិនត្រូវការគណនី ការចូលប្រើ ឬការផ្ទៀងផ្ទាត់អត្តសញ្ញាណទេ។ ការស្វែងរកត្រូវបានអនុវត្តក្នុងកម្មវិធីរុករករបស់អ្នកដោយប្រើឯកសារទិន្នន័យដែលបានផ្សព្វផ្សាយជាមួយគេហទំព័រ។': 'This platform requires no account, login, or identity verification. Searches run in your browser using the data file published with the website.',
+  'យើងព្យាយាមបង្ហាញតែព័ត៌មានដែលចាំបាច់សម្រាប់សម្គាល់កំណត់ត្រា និងលទ្ធផលប្រឡង។ សូមកុំប្រើព័ត៌មាននេះសម្រាប់ការរំខាន ការរើសអើង ឬគោលបំណងដែលប៉ះពាល់ដល់សិស្ស។': 'We aim to show only information needed to identify examination records. Do not use this information for harassment, discrimination, or any purpose that harms students.',
+  'វេទិកានេះជាគម្រោងឯករាជ្យ និងមិនត្រូវបានចាត់ទុកថាជាគេហទំព័រផ្លូវការរបស់ក្រសួងអប់រំ យុវជន និងកីឡា លុះត្រាតែមានការអនុញ្ញាតជាក់លាក់ជាលាយលក្ខណ៍អក្សរ។': 'This is an independent project and is not an official Ministry of Education, Youth and Sport website unless explicitly authorized in writing.',
+  'ការដកស្រង់ទិន្នន័យអាចមានកំហុសអក្ខរាវិរុទ្ធ ឬការផ្គូផ្គង។ សូមប្រើប្រភពផ្លូវការជាចុងក្រោយសម្រាប់ការបញ្ជាក់លទ្ធផល។ បើអ្នករកឃើញកំហុស សូមរាយការណ៍មកយើង។': 'Transcribed data may contain spelling or matching errors. Use an official source for final confirmation and report any errors you find.',
+  'តំណភ្ជាប់នេះប្រហែលជាមិនត្រឹមត្រូវ ឬកំណត់ត្រាមិនមានទៀតទេ។': 'This link may be incorrect or the record is no longer available.', 'សូមពិនិត្យការតភ្ជាប់អ៊ីនធឺណិត រួចសាកល្បងម្តងទៀត។': 'Check your internet connection and try again.'
+}));
 
 const arabicToKhmer = { 0: '០', 1: '១', 2: '២', 3: '៣', 4: '៤', 5: '៥', 6: '៦', 7: '៧', 8: '៨', 9: '៩' };
 const khmerToArabic = Object.fromEntries(Object.entries(arabicToKhmer).map(([key, value]) => [value, key]));
@@ -35,7 +116,60 @@ function normalize(value) {
 }
 
 function khmerNumber(value) {
-  return String(value ?? '').replace(/[0-9]/g, digit => arabicToKhmer[digit]);
+  const output = String(value ?? '');
+  return language === 'km' ? output.replace(/[0-9]/g, digit => arabicToKhmer[digit]) : output;
+}
+
+function translateText(value) {
+  const trimmed = value.trim();
+  if (!trimmed) return value;
+  let translated = english.get(trimmed);
+  if (!translated) {
+    translated = trimmed
+      .replace(/^រកឃើញ (.+) លទ្ធផល$/, 'Found $1 results')
+      .replace(/^បង្ហាញ (.+)–(.+) នៃ (.+)$/, 'Showing $1–$2 of $3')
+      .replace(/^រកឃើញ (.+) សាលា$/, 'Found $1 schools')
+      .replace(/^សាលារៀន (.+)$/, '$1 schools')
+      .replace(/^សិស្ស (.+) នាក់$/, '$1 students')
+      .replace(/^(.+) កំណត់ត្រា$/, '$1 records')
+      .replace(/^ឆ្នាំ (.+)$/, 'Year $1')
+      .replace(/^ទំព័រ (.+)$/, 'Page $1');
+  }
+  if (translated === trimmed) return value;
+  const leading = value.match(/^\s*/)?.[0] || '';
+  const trailing = value.match(/\s*$/)?.[0] || '';
+  return `${leading}${translated}${trailing}`;
+}
+
+function applyLanguage() {
+  document.documentElement.lang = language;
+  document.querySelectorAll('[data-language]').forEach(button => {
+    const active = button.dataset.language === language;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-pressed', String(active));
+  });
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach(node => {
+    const parent = node.parentElement;
+    if (!parent || ['SCRIPT', 'STYLE'].includes(parent.tagName)) return;
+    if (node.__khmerText === undefined) node.__khmerText = node.nodeValue;
+    node.nodeValue = language === 'en' ? translateText(node.__khmerText) : node.__khmerText;
+  });
+  document.querySelectorAll('[placeholder], [aria-label]').forEach(element => {
+    ['placeholder', 'aria-label'].forEach(attribute => {
+      if (!element.hasAttribute(attribute)) return;
+      const key = `khmer${attribute.replace('-', '')}`;
+      if (element.dataset[key] === undefined) element.dataset[key] = element.getAttribute(attribute);
+      element.setAttribute(attribute, language === 'en' ? translateText(element.dataset[key]) : element.dataset[key]);
+    });
+  });
+}
+
+function yearOptions(selected = '', includeAll = true) {
+  const all = includeAll ? `<option value="">${language === 'en' ? 'All years' : 'គ្រប់ឆ្នាំ'}</option>` : '';
+  return `${all}${EXAM_YEARS.map(year => `<option value="${year}" ${selected === year ? 'selected' : ''}>${khmerNumber(year)}</option>`).join('')}`;
 }
 
 function getValue(student, ...keys) {
@@ -108,11 +242,12 @@ function stateCard(type, title, message, action = '') {
 }
 
 function renderHome() {
+  homeSearchType = 'name';
   const schoolCount = new Set(students.map(student => student['School Name']).filter(Boolean)).size;
   app.innerHTML = `
     <section class="hero">
       <div class="shell hero-inner">
-        <p class="eyebrow">ទិន្នន័យលទ្ធផលប្រឡងឆ្នាំ ២០២៥</p>
+        <p class="eyebrow">ទិន្នន័យលទ្ធផលប្រឡងឆ្នាំ ២០២០–២០២៥</p>
         <h1>ស្វែងរក<span>លទ្ធផលបាក់ឌុប</span><br />បានងាយ និងរហ័ស</h1>
         <p class="hero-lead">ស្វែងរកតាមឈ្មោះ ថ្ងៃខែឆ្នាំកំណើត លេខបេក្ខជន ឬសាលា។ គាំទ្រការស្វែងរកជាភាសាខ្មែរ និងប្រើបានល្អលើទូរស័ព្ទ។</p>
         <form class="home-search" id="home-search-form">
@@ -125,6 +260,7 @@ function renderHome() {
           <div class="home-search-body">
             <label for="home-query" id="home-search-label">ឈ្មោះពេញ ឬផ្នែកណាមួយនៃឈ្មោះ</label>
             <div class="home-search-row">
+              <div class="home-year"><label class="sr-only" for="home-year">ឆ្នាំប្រឡង</label><select id="home-year" name="year" aria-label="ឆ្នាំប្រឡង">${yearOptions('2025')}</select></div>
               <div class="input-with-icon"><span class="input-symbol" aria-hidden="true">⌕</span><input id="home-query" name="query" autocomplete="off" enterkeyhint="search" placeholder="ឧ. ឈុំ សុខរិទ្ធ" required /></div>
               <button class="btn btn-primary" type="submit">ស្វែងរកឥឡូវ</button>
             </div>
@@ -150,7 +286,7 @@ function renderHome() {
       <div class="shell">
         <div class="section-heading"><p class="section-kicker">របៀបប្រើប្រាស់</p><h2>ត្រឹមតែ ៣ ជំហាន</h2></div>
         <div class="steps"><div class="step"><h3>បញ្ចូលព័ត៌មាន</h3><p>វាយឈ្មោះ ថ្ងៃកំណើត លេខបេក្ខជន ឬសាលា។</p></div><div class="step"><h3>ស្វែងរកកំណត់ត្រា</h3><p>ប្រព័ន្ធនឹងផ្គូផ្គងព័ត៌មានជាមួយទិន្នន័យដែលមាន។</p></div><div class="step"><h3>មើលលទ្ធផល</h3><p>បើកព័ត៌មានលម្អិត និងមើលនិទ្ទេសតាមមុខវិជ្ជា។</p></div></div>
-        <div class="stats-grid"><div class="stat"><strong>${khmerNumber(students.length)}</strong><span>កំណត់ត្រាសិស្ស</span></div><div class="stat"><strong>${khmerNumber(schoolCount)}</strong><span>សាលារៀន</span></div><div class="stat"><strong>២០២៥</strong><span>ឆ្នាំប្រឡង</span></div></div>
+        <div class="stats-grid"><div class="stat"><strong>${khmerNumber(students.length)}</strong><span>កំណត់ត្រាសិស្ស</span></div><div class="stat"><strong>${khmerNumber(schoolCount)}</strong><span>សាលារៀន</span></div><div class="stat"><strong>${language === 'km' ? '២០២០–២០២៥' : '2020–2025'}</strong><span>ឆ្នាំប្រឡងដែលគាំទ្រ</span></div></div>
       </div>
     </section>
     <section class="section"><div class="shell"><div class="notice"><span class="notice-icon">i</span><div><h2>ព័ត៌មានសំខាន់</h2><p>វេទិកានេះជាឧបករណ៍ស្វែងរកឯករាជ្យ និងមិនមែនជាគេហទំព័រផ្លូវការរបស់ក្រសួងអប់រំទេ។ សូមផ្ទៀងផ្ទាត់ព័ត៌មានសំខាន់ជាមួយប្រភពផ្លូវការ។</p></div></div></div></section>`;
@@ -170,16 +306,19 @@ function bindHomeSearch() {
     const input = document.querySelector('#home-query');
     document.querySelector('#home-search-label').textContent = config[homeSearchType][0];
     input.placeholder = config[homeSearchType][1];
+    delete input.dataset.khmerplaceholder;
     input.value = '';
     document.querySelector('#home-search-hint').textContent = config[homeSearchType][2];
+    applyLanguage();
     input.focus();
   }));
   document.querySelector('#home-search-form').addEventListener('submit', event => {
     event.preventDefault();
     const query = document.querySelector('#home-query').value.trim();
+    const year = document.querySelector('#home-year').value;
     if (!query) return;
-    if (homeSearchType === 'school') routeTo('schools', { q: query });
-    else routeTo('results', { [homeSearchType === 'name' ? 'q' : homeSearchType]: query });
+    if (homeSearchType === 'school') routeTo('schools', { q: query, year });
+    else routeTo('results', { [homeSearchType === 'name' ? 'q' : homeSearchType]: query, year });
   });
 }
 
@@ -197,7 +336,7 @@ function renderStudentSearch() {
           <div class="form-field"><label for="school">សាលារៀន</label><input id="school" name="school" placeholder="ឈ្មោះសាលា" /></div>
           <div class="form-field"><label for="province">រាជធានី / ខេត្ត</label><input id="province" name="province" placeholder="ប្រសិនបើមានក្នុងទិន្នន័យ" /></div>
           <div class="form-field"><label for="center">មណ្ឌលប្រឡង</label><input id="center" name="center" placeholder="ប្រសិនបើមានក្នុងទិន្នន័យ" /></div>
-          <div class="form-field"><label for="year">ឆ្នាំប្រឡង</label><select id="year" name="year"><option value="">គ្រប់ឆ្នាំ</option><option value="2025">២០២៥</option></select></div>
+          <div class="form-field"><label for="year">ឆ្នាំប្រឡង</label><select id="year" name="year">${yearOptions()}</select></div>
         </div>
         <div class="form-actions"><button class="btn btn-secondary" id="reset-filters" type="reset">សម្អាតតម្រង</button><button class="btn btn-primary" type="submit">ស្វែងរកលទ្ធផល</button></div>
       </form>
@@ -313,9 +452,10 @@ function schoolsData() {
 function renderSchools(params) {
   const query = params.get('q') || '';
   const province = params.get('province') || '';
-  const schools = schoolsData().filter(school => normalize(school.name).includes(normalize(query)) && (!province || school.records.some(student => normalize(studentProvince(student)).includes(normalize(province)))));
+  const year = params.get('year') || '';
+  const schools = schoolsData().filter(school => normalize(school.name).includes(normalize(query)) && (!province || school.records.some(student => normalize(studentProvince(student)).includes(normalize(province)))) && (!year || school.records.some(student => normalize(studentYear(student)) === normalize(year))));
   app.innerHTML = `${pageHero('ស្វែងរកសាលារៀន', 'ស្វែងរកសាលា ហើយមើលកំណត់ត្រាសិស្សដែលមានសម្រាប់សាលានោះ។', [['#schools', 'ស្វែងរកសាលា']])}
-    <section class="page-content"><div class="shell"><form class="search-panel" id="school-form"><div class="form-grid"><div class="form-field form-span-2"><label for="school-query">ឈ្មោះសាលារៀន</label><input id="school-query" name="q" value="${escapeHtml(query)}" placeholder="វាយឈ្មោះសាលា" /></div><div class="form-field"><label for="school-province">រាជធានី / ខេត្ត</label><input id="school-province" name="province" value="${escapeHtml(province)}" placeholder="ប្រសិនបើមានក្នុងទិន្នន័យ" /></div></div><div class="form-actions"><button class="btn btn-secondary" type="reset">សម្អាត</button><button class="btn btn-primary" type="submit">ស្វែងរកសាលា</button></div></form>
+    <section class="page-content"><div class="shell"><form class="search-panel" id="school-form"><div class="form-grid"><div class="form-field"><label for="school-query">ឈ្មោះសាលារៀន</label><input id="school-query" name="q" value="${escapeHtml(query)}" placeholder="វាយឈ្មោះសាលា" /></div><div class="form-field"><label for="school-province">រាជធានី / ខេត្ត</label><input id="school-province" name="province" value="${escapeHtml(province)}" placeholder="ប្រសិនបើមានក្នុងទិន្នន័យ" /></div><div class="form-field"><label for="school-year">ឆ្នាំប្រឡង</label><select id="school-year" name="year">${yearOptions(year)}</select></div></div><div class="form-actions"><button class="btn btn-secondary" type="reset">សម្អាត</button><button class="btn btn-primary" type="submit">ស្វែងរកសាលា</button></div></form>
       <div class="results-toolbar"><div><h2>${query || province ? `រកឃើញ ${khmerNumber(schools.length)} សាលា` : `សាលារៀន ${khmerNumber(schools.length)}`}</h2><p>ជ្រើសរើសសាលាដើម្បីមើលបញ្ជីសិស្ស</p></div></div>
       ${schools.length ? `<div class="school-grid">${schools.map((school, index) => `<article class="school-card"><span class="school-code">${khmerNumber(index + 1)}</span><h2>${escapeHtml(school.name)}</h2><p>ទីតាំង: ${escapeHtml(studentProvince(school.records[0]) || 'មិនមានទិន្នន័យ')}</p><div class="school-card-stats"><span>${khmerNumber(school.records.length)} កំណត់ត្រា</span><span>${school.years.map(khmerNumber).join(', ')}</span></div><a class="table-link" href="#school/${encodeURIComponent(school.name)}">មើលសាលា →</a></article>`).join('')}</div>` : stateCard('empty', 'រកមិនឃើញសាលា', 'សាកល្បងផ្នែកខ្លីនៃឈ្មោះសាលា ឬសម្អាតតម្រង។')}
     </div></section>`;
@@ -333,8 +473,8 @@ function renderSchoolDetail(encodedName, params) {
   const grade = params.get('grade') || '';
   const records = allRecords.filter(student => normalize(student.Name).includes(normalize(query)) && (!year || normalize(studentYear(student)) === normalize(year)) && (!grade || normalize(student.Grade) === normalize(grade)));
   app.innerHTML = `${pageHero('ព័ត៌មានសាលា', 'មើលកំណត់ត្រាសិស្សដែលមាន និងស្វែងរកក្នុងសាលានេះ។', [['#schools', 'ស្វែងរកសាលា'], [`#school/${encodedName}`, name]])}
-    <section class="page-content"><div class="shell"><div class="search-panel"><div class="school-head"><span class="school-code">សាលា</span><div><h2>${escapeHtml(name)}</h2><p>${khmerNumber(allRecords.length)} កំណត់ត្រា · ឆ្នាំប្រឡង ២០២៥ · ${escapeHtml(studentProvince(allRecords[0]) || 'ទីតាំងមិនមានទិន្នន័យ')}</p></div></div></div>
-      <form class="search-panel" id="inside-school-form" style="margin-top:18px"><div class="form-grid"><div class="form-field"><label for="inside-name">ឈ្មោះសិស្ស</label><input id="inside-name" name="q" value="${escapeHtml(query)}" placeholder="ស្វែងរកក្នុងសាលា" /></div><div class="form-field"><label for="inside-year">ឆ្នាំ</label><select id="inside-year" name="year"><option value="">គ្រប់ឆ្នាំ</option><option value="2025" ${year === '2025' ? 'selected' : ''}>២០២៥</option></select></div><div class="form-field"><label for="inside-grade">និទ្ទេស</label><select id="inside-grade" name="grade"><option value="">គ្រប់និទ្ទេស</option>${['A','B','C','D','E','F'].map(value => `<option ${grade === value ? 'selected' : ''}>${value}</option>`).join('')}</select></div></div><div class="form-actions"><button class="btn btn-secondary" type="reset">សម្អាត</button><button class="btn btn-primary" type="submit">អនុវត្តតម្រង</button></div></form>
+    <section class="page-content"><div class="shell"><div class="search-panel"><div class="school-head"><span class="school-code">សាលា</span><div><h2>${escapeHtml(name)}</h2><p>${khmerNumber(allRecords.length)} កំណត់ត្រា · ${language === 'en' ? 'Exam years 2020–2025' : 'ឆ្នាំប្រឡង ២០២០–២០២៥'} · ${escapeHtml(studentProvince(allRecords[0]) || (language === 'en' ? 'Location unavailable' : 'ទីតាំងមិនមានទិន្នន័យ'))}</p></div></div></div>
+      <form class="search-panel" id="inside-school-form" style="margin-top:18px"><div class="form-grid"><div class="form-field"><label for="inside-name">ឈ្មោះសិស្ស</label><input id="inside-name" name="q" value="${escapeHtml(query)}" placeholder="ស្វែងរកក្នុងសាលា" /></div><div class="form-field"><label for="inside-year">ឆ្នាំ</label><select id="inside-year" name="year">${yearOptions(year)}</select></div><div class="form-field"><label for="inside-grade">និទ្ទេស</label><select id="inside-grade" name="grade"><option value="">${language === 'en' ? 'All grades' : 'គ្រប់និទ្ទេស'}</option>${['A','B','C','D','E','F'].map(value => `<option ${grade === value ? 'selected' : ''}>${value}</option>`).join('')}</select></div></div><div class="form-actions"><button class="btn btn-secondary" type="reset">សម្អាត</button><button class="btn btn-primary" type="submit">អនុវត្តតម្រង</button></div></form>
       <div class="results-toolbar"><div><h2>សិស្ស ${khmerNumber(records.length)} នាក់</h2><p>កំណត់ត្រាដែលផ្គូផ្គងតម្រង</p></div></div>
       ${records.length ? `<div class="table-wrap"><table class="results-table"><thead><tr><th>សិស្ស</th><th>ថ្ងៃកំណើត</th><th>ឆ្នាំ</th><th>និទ្ទេស</th><th>លទ្ធផល</th><th></th></tr></thead><tbody>${records.map(student => resultRow(student).replace(`<td>${escapeHtml(student['School Name'] || 'មិនមានទិន្នន័យ')}</td>`, '')).join('')}</tbody></table><div class="result-cards-mobile">${records.map(resultCard).join('')}</div></div>` : stateCard('empty', 'មិនមានកំណត់ត្រាផ្គូផ្គង', 'សូមសម្អាតតម្រង ឬសាកល្បងឈ្មោះផ្សេង។')}
     </div></section>`;
@@ -369,7 +509,7 @@ function renderLoadError() {
 function renderRoute() {
   const { path, params } = routeInfo();
   setActiveNavigation(path);
-  if (loadError) { renderLoadError(); return; }
+  if (loadError) { renderLoadError(); applyLanguage(); return; }
   const [root, rest] = path.split('/');
   if (root === 'home') renderHome();
   else if (root === 'students') renderStudentSearch();
@@ -382,6 +522,7 @@ function renderRoute() {
   else if (root === 'report') renderContact(true);
   else if (root === 'privacy' || root === 'disclaimer') renderPolicy(root);
   else renderNotFound();
+  applyLanguage();
   requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'instant' }));
 }
 
@@ -397,8 +538,15 @@ navigation.addEventListener('click', event => {
   }
 });
 
+document.querySelectorAll('[data-language]').forEach(button => button.addEventListener('click', () => {
+  language = button.dataset.language;
+  localStorage.setItem('bacii-language', language);
+  renderRoute();
+}));
+
 window.addEventListener('hashchange', renderRoute);
 document.querySelector('#current-year').textContent = new Date().getFullYear();
+applyLanguage();
 
 fetch('./results.json')
   .then(response => { if (!response.ok) throw new Error('Could not load results'); return response.json(); })
