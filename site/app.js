@@ -19,8 +19,6 @@ const english = new Map(Object.entries({
   'លេខបេក្ខជន / លេខសម្គាល់': 'Candidate / student ID', 'បញ្ចូលលេខជាខ្មែរ ឬអង់គ្លេស។': 'Enter Khmer or English numerals.',
   'វាយតាមទម្រង់ដែលបានបោះពុម្ពក្នុងបញ្ជីលទ្ធផល។': 'Use the format printed in the examination record.',
   'ឈ្មោះសាលារៀន': 'School name', 'វាយឈ្មោះពេញ ឬផ្នែកណាមួយនៃឈ្មោះសាលា។': 'Enter a full school name or part of it.',
-  'ស្វែងរករហ័ស': 'Quick search', 'ជ្រើសរើសវិធីដែលងាយសម្រាប់អ្នក': 'Choose the easiest way to search',
-  'ចាប់ផ្តើមដោយព័ត៌មានតែមួយ ឬប្រើតម្រងច្រើនដើម្បីទទួលបានលទ្ធផលកាន់តែច្បាស់។': 'Start with one detail or combine filters for more accurate results.',
   'ស្វែងរកកម្រិតខ្ពស់': 'Advanced student search', 'ស្វែងរកលេខបេក្ខជន': 'Search by candidate number',
   'ប្រើឈ្មោះ ថ្ងៃកំណើត លេខបេក្ខជន ឬបញ្ចូលតម្រងរួមគ្នា។': 'Use a name, birthday, candidate number, or combined filters.',
   'ស្វែងរកកំណត់ត្រាជាក់លាក់ដោយលេខសម្គាល់បេក្ខជន ប្រសិនបើមានក្នុងទិន្នន័យ។': 'Find a specific record using its candidate number when available.',
@@ -277,16 +275,6 @@ function renderHome() {
             </div>
           </div>
         </form>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="shell">
-        <div class="section-heading"><p class="section-kicker">ស្វែងរករហ័ស</p><h2>ជ្រើសរើសវិធីដែលងាយសម្រាប់អ្នក</h2><p>ចាប់ផ្តើមដោយព័ត៌មានតែមួយ ឬប្រើតម្រងច្រើនដើម្បីទទួលបានលទ្ធផលកាន់តែច្បាស់។</p></div>
-        <div class="quick-grid">
-          <a class="quick-card" href="#students"><span class="quick-icon">នាម</span><h3>ស្វែងរកសិស្ស</h3><p>ប្រើឈ្មោះ ថ្ងៃកំណើត លេខបេក្ខជន ឬបញ្ចូលតម្រងរួមគ្នា។</p><span class="card-arrow">→</span></a>
-          <a class="quick-card" href="#students"><span class="quick-icon">ID</span><h3>ស្វែងរកលេខបេក្ខជន</h3><p>ស្វែងរកកំណត់ត្រាជាក់លាក់ដោយលេខសម្គាល់បេក្ខជន ប្រសិនបើមានក្នុងទិន្នន័យ។</p><span class="card-arrow">→</span></a>
-        </div>
       </div>
     </section>
 
