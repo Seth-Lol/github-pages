@@ -127,6 +127,10 @@ input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px 
 .quick-card h3 { margin: 18px 0 8px; font-size: 18px; }
 .quick-card p { margin: 0; color: var(--text-secondary); font-size: 13px; line-height: 1.75; }
 .card-arrow { position: absolute; right: 22px; bottom: 18px; color: var(--primary); font: 700 20px/1 Inter, sans-serif; }
+.school-contact-card { grid-column: span 1; }
+.school-contact-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.school-contact-actions a { border: 1px solid #b8cadb; border-radius: var(--radius-m); background: #fff; color: var(--primary); padding: 8px 12px; font-size: 11px; font-weight: 700; text-decoration: none; }
+.school-contact-actions a:first-child { border-color: var(--primary); background: var(--primary); color: #fff; }
 .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 34px; max-width: 980px; margin: 0 auto; counter-reset: steps; }
 .step { position: relative; text-align: center; }
 .step::before { width: 48px; height: 48px; display: grid; place-items: center; margin: 0 auto 16px; border-radius: 50%; background: var(--navy); color: #fff; counter-increment: steps; content: counter(steps); font: 800 16px/1 Inter, sans-serif; box-shadow: 0 0 0 7px #dfeaf4; }
@@ -224,53 +228,21 @@ input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px 
 .side-card p { margin: 0 0 16px; color: var(--text-secondary); font-size: 11px; line-height: 1.75; }
 .side-card .btn { width: 100%; font-size: 12px; }
 
-.school-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; }
-.school-card { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: var(--radius-l); background: #fff; box-shadow: var(--shadow-s); padding: 20px; }
-.school-code { width: 42px; height: 42px; display: grid; place-items: center; border-radius: var(--radius-m); background: var(--primary-light); color: var(--primary); font: 800 12px/1 Inter, sans-serif; }
-.school-card h2 { margin: 14px 0 5px; font-size: 15px; line-height: 1.6; }
-.school-card > p { margin: 0; color: var(--text-secondary); font-size: 11px; }
-.school-card-stats { display: flex; gap: 8px; margin: 16px 0; }
-.school-card-stats span { border-radius: var(--radius-s); background: #f1f5f8; color: var(--text-secondary); padding: 6px 8px; font-size: 9px; font-weight: 700; }
-.school-card .table-link { margin-top: auto; font-size: 12px; }
-.school-head { display: flex; align-items: flex-start; gap: 18px; }
-.school-head .school-code { width: 60px; height: 60px; flex: 0 0 auto; font-size: 16px; }
-
 .content-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
 .prose-card { border: 1px solid var(--border); border-radius: var(--radius-l); background: #fff; padding: 30px; }
 .prose-card h2 { margin: 30px 0 10px; font-size: 20px; }
 .prose-card h2:first-child { margin-top: 0; }
 .prose-card p, .prose-card li { color: var(--text-secondary); font-size: 13px; line-height: 1.95; }
 .prose-card ol, .prose-card ul { padding-left: 22px; }
-.contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-.contact-card { border: 1px solid var(--border); border-radius: var(--radius-l); background: #fff; padding: 28px; }
-.contact-symbol { width: 50px; height: 50px; display: grid; place-items: center; border-radius: 13px; background: var(--primary-light); color: var(--primary); font: 800 15px/1 Inter, sans-serif; }
-.contact-card h2 { margin: 18px 0 5px; font-size: 19px; }
-.contact-card p { margin: 0 0 18px; color: var(--text-secondary); font-size: 12px; line-height: 1.75; overflow-wrap: anywhere; }
-.contact-card .btn { width: 100%; }
-.report-box { margin-top: 22px; border: 1px solid #eadcae; border-radius: var(--radius-l); background: #fffaf0; padding: 24px; }
-.report-box h2 { margin: 0 0 7px; font-size: 17px; }
-.report-box p { margin: 0 0 16px; color: #6b5b38; font-size: 12px; line-height: 1.8; }
-
-.site-footer { border-top: 4px solid var(--navy); background: #fff; padding: 48px 0 22px; }
-.footer-grid { display: grid; grid-template-columns: 1.7fr 1fr 1fr 1.25fr; gap: 38px; }
-.brand-footer .brand-mark { width: 40px; height: 40px; }
-.footer-about > p { max-width: 330px; margin: 17px 0 0; color: var(--text-secondary); font-size: 11px; line-height: 1.8; }
-.footer-grid h2 { margin: 4px 0 14px; font-size: 13px; }
-.footer-grid > div > a:not(.brand) { display: block; margin: 10px 0; color: var(--text-secondary); font-size: 11px; line-height: 1.6; text-decoration: none; overflow-wrap: anywhere; }
-.footer-grid > div > a:not(.brand):hover { color: var(--primary); }
-.footer-bottom { display: flex; justify-content: space-between; gap: 24px; margin-top: 38px; padding-top: 20px; border-top: 1px solid var(--border); }
-.footer-bottom p { margin: 0; color: var(--muted); font-size: 9px; line-height: 1.7; }
 .noscript { position: fixed; z-index: 50; right: 16px; bottom: 16px; left: 16px; border-radius: var(--radius-m); background: var(--error); color: #fff; padding: 14px; text-align: center; }
 
 @media (max-width: 1024px) {
   .shell { width: min(100% - 48px, 960px); }
-  .quick-grid, .school-grid { grid-template-columns: repeat(2, 1fr); }
+  .quick-grid { grid-template-columns: repeat(2, 1fr); }
   .form-grid { grid-template-columns: repeat(2, 1fr); }
   .detail-grid, .content-layout { grid-template-columns: 1fr; }
   .side-card-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .side-card + .side-card { margin-top: 0; }
-  .footer-grid { grid-template-columns: 1.5fr 1fr 1fr; }
-  .footer-grid > div:last-child { grid-column: 2 / 4; }
 }
 
 @media (max-width: 780px) {
@@ -303,7 +275,7 @@ input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px 
   .home-search-body { padding: 16px; }
   .home-search-row { grid-template-columns: 1fr; }
   .home-search-row .btn { width: 100%; }
-  .quick-grid, .steps, .stats-grid, .school-grid, .contact-grid { grid-template-columns: 1fr; }
+  .quick-grid, .steps, .stats-grid { grid-template-columns: 1fr; }
   .quick-card { min-height: 190px; }
   .steps { gap: 32px; }
   .step { max-width: 420px; margin-inline: auto; }
@@ -324,10 +296,7 @@ input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px 
   .result-identity h1 { font-size: 20px; }
   .score-section { padding: 20px; }
   .side-card-wrap { grid-template-columns: 1fr; }
-  .prose-card, .contact-card { padding: 22px; }
-  .footer-grid { grid-template-columns: 1fr; gap: 26px; }
-  .footer-about, .footer-grid > div:last-child { grid-column: auto; }
-  .footer-bottom { flex-direction: column; gap: 8px; }
+  .prose-card { padding: 22px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

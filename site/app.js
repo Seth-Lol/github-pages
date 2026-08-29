@@ -81,6 +81,9 @@ const english = new Map(Object.entries({
   'វេទិកានេះជាគម្រោងឯករាជ្យ និងមិនត្រូវបានចាត់ទុកថាជាគេហទំព័រផ្លូវការរបស់ក្រសួងអប់រំ យុវជន និងកីឡា លុះត្រាតែមានការអនុញ្ញាតជាក់លាក់ជាលាយលក្ខណ៍អក្សរ។': 'This is an independent project and is not an official Ministry of Education, Youth and Sport website unless explicitly authorized in writing.',
   'ការដកស្រង់ទិន្នន័យអាចមានកំហុសអក្ខរាវិរុទ្ធ ឬការផ្គូផ្គង។ សូមប្រើប្រភពផ្លូវការជាចុងក្រោយសម្រាប់ការបញ្ជាក់លទ្ធផល។ បើអ្នករកឃើញកំហុស សូមរាយការណ៍មកយើង។': 'Transcribed data may contain spelling or matching errors. Use an official source for final confirmation and report any errors you find.',
   'តំណភ្ជាប់នេះប្រហែលជាមិនត្រឹមត្រូវ ឬកំណត់ត្រាមិនមានទៀតទេ។': 'This link may be incorrect or the record is no longer available.', 'សូមពិនិត្យការតភ្ជាប់អ៊ីនធឺណិត រួចសាកល្បងម្តងទៀត។': 'Check your internet connection and try again.'
+  , 'សម្រាប់គណៈគ្រប់គ្រងសាលា': 'For school management teams'
+  , 'ប្រសិនបើក្រុមគ្រប់គ្រងសាលាចង់ស្វែងរកឈ្មោះសិស្សបានងាយស្រួល សូមទាក់ទងមកខ្ញុំ។': 'If your school management team wants an easier way to search student names, please contact me.'
+  , 'បើកទំព័រស្វែងរកសិស្ស។': 'Open the student search page.'
 }));
 
 const arabicToKhmer = { 0: '០', 1: '១', 2: '២', 3: '៣', 4: '៤', 5: '៥', 6: '៦', 7: '៧', 8: '៨', 9: '៩' };
@@ -255,7 +258,6 @@ function renderHome() {
             <button class="search-tab active" type="button" data-search-type="name">ឈ្មោះសិស្ស</button>
             <button class="search-tab" type="button" data-search-type="id">លេខបេក្ខជន</button>
             <button class="search-tab" type="button" data-search-type="birthday">ថ្ងៃខែឆ្នាំកំណើត</button>
-            <button class="search-tab" type="button" data-search-type="school">សាលារៀន</button>
           </div>
           <div class="home-search-body">
             <label for="home-query" id="home-search-label">ឈ្មោះពេញ ឬផ្នែកណាមួយនៃឈ្មោះ</label>
@@ -277,7 +279,7 @@ function renderHome() {
         <div class="quick-grid">
           <a class="quick-card" href="#students"><span class="quick-icon">នាម</span><h3>ស្វែងរកសិស្ស</h3><p>ប្រើឈ្មោះ ថ្ងៃកំណើត លេខបេក្ខជន ឬបញ្ចូលតម្រងរួមគ្នា។</p><span class="card-arrow">→</span></a>
           <a class="quick-card" href="#students"><span class="quick-icon">ID</span><h3>ស្វែងរកលេខបេក្ខជន</h3><p>ស្វែងរកកំណត់ត្រាជាក់លាក់ដោយលេខសម្គាល់បេក្ខជន ប្រសិនបើមានក្នុងទិន្នន័យ។</p><span class="card-arrow">→</span></a>
-          <a class="quick-card" href="#schools"><span class="quick-icon">សាលា</span><h3>ស្វែងរកសាលា</h3><p>រកសាលារៀន ហើយមើលបញ្ជីសិស្ស និងលទ្ធផលដែលមាន។</p><span class="card-arrow">→</span></a>
+          <article class="quick-card school-contact-card"><span class="quick-icon">សាលា</span><h3>សម្រាប់គណៈគ្រប់គ្រងសាលា</h3><p>ប្រសិនបើក្រុមគ្រប់គ្រងសាលាចង់ស្វែងរកឈ្មោះសិស្សបានងាយស្រួល សូមទាក់ទងមកខ្ញុំ។</p><div class="school-contact-actions"><a href="https://t.me/Iamnotaproplayer" target="_blank" rel="noreferrer">Telegram</a><a href="mailto:investingseth@gmail.com">Email</a></div></article>
         </div>
       </div>
     </section>
@@ -317,8 +319,7 @@ function bindHomeSearch() {
     const query = document.querySelector('#home-query').value.trim();
     const year = document.querySelector('#home-year').value;
     if (!query) return;
-    if (homeSearchType === 'school') routeTo('schools', { q: query, year });
-    else routeTo('results', { [homeSearchType === 'name' ? 'q' : homeSearchType]: query, year });
+    routeTo('results', { [homeSearchType === 'name' ? 'q' : homeSearchType]: query, year });
   });
 }
 
@@ -435,62 +436,12 @@ function renderStudentDetail(index) {
         <div class="detail-fields"><div class="detail-field"><span class="meta-label">លេខបេក្ខជន</span><span class="meta-value">${escapeHtml(studentId(student) || 'មិនមានទិន្នន័យ')}</span></div><div class="detail-field"><span class="meta-label">ថ្ងៃខែឆ្នាំកំណើត</span><span class="meta-value">${escapeHtml(student.Birthday || 'មិនមានទិន្នន័យ')}</span></div><div class="detail-field"><span class="meta-label">រាជធានី / ខេត្ត</span><span class="meta-value">${escapeHtml(studentProvince(student) || 'មិនមានទិន្នន័យ')}</span></div><div class="detail-field"><span class="meta-label">មណ្ឌលប្រឡង</span><span class="meta-value">${escapeHtml(studentCenter(student) || 'មិនមានទិន្នន័យ')}</span></div></div>
         <div class="score-section"><h2>និទ្ទេសតាមមុខវិជ្ជា</h2><table class="score-table"><thead><tr><th>មុខវិជ្ជា</th><th>និទ្ទេស</th></tr></thead><tbody>${scores}</tbody></table></div>
       </article>
-      <aside class="side-card-wrap"><div class="side-card"><h2>ព័ត៌មានប្រភព</h2><p>កំណត់ត្រានេះត្រូវបានដកស្រង់ពីទំព័រ ${escapeHtml(khmerNumber(student['Page Number'] || '—'))} នៃឯកសារលទ្ធផល។ សូមផ្ទៀងផ្ទាត់ជាមួយប្រភពផ្លូវការ។</p><a class="btn btn-secondary" href="#schools?q=${encodeURIComponent(student['School Name'] || '')}">មើលសាលានេះ</a></div><div class="side-card"><h2>រកឃើញព័ត៌មានខុស?</h2><p>សូមផ្ញើឈ្មោះ និងព័ត៌មានដែលត្រូវកែ ដើម្បីឱ្យយើងពិនិត្យឡើងវិញ។</p><a class="btn btn-danger-light" href="#report">រាយការណ៍ព័ត៌មានខុស</a></div></aside>
+      <aside class="side-card-wrap"><div class="side-card"><h2>ព័ត៌មានប្រភព</h2><p>កំណត់ត្រានេះត្រូវបានដកស្រង់ពីទំព័រ ${escapeHtml(khmerNumber(student['Page Number'] || '—'))} នៃឯកសារលទ្ធផល។ សូមផ្ទៀងផ្ទាត់ជាមួយប្រភពផ្លូវការ។</p></div><div class="side-card"><h2>រកឃើញព័ត៌មានខុស?</h2><p>សូមផ្ញើឈ្មោះ និងព័ត៌មានដែលត្រូវកែ ដើម្បីឱ្យយើងពិនិត្យឡើងវិញ។</p><a class="btn btn-danger-light" href="mailto:investingseth@gmail.com?subject=Report incorrect BacII information">រាយការណ៍ព័ត៌មានខុស</a></div></aside>
     </div></section>`;
-}
-
-function schoolsData() {
-  const grouped = new Map();
-  students.forEach(student => {
-    const name = student['School Name'] || 'មិនមានឈ្មោះសាលា';
-    if (!grouped.has(name)) grouped.set(name, []);
-    grouped.get(name).push(student);
-  });
-  return [...grouped.entries()].map(([name, records]) => ({ name, records, years: [...new Set(records.map(studentYear))] }));
-}
-
-function renderSchools(params) {
-  const query = params.get('q') || '';
-  const province = params.get('province') || '';
-  const year = params.get('year') || '';
-  const schools = schoolsData().filter(school => normalize(school.name).includes(normalize(query)) && (!province || school.records.some(student => normalize(studentProvince(student)).includes(normalize(province)))) && (!year || school.records.some(student => normalize(studentYear(student)) === normalize(year))));
-  app.innerHTML = `${pageHero('ស្វែងរកសាលារៀន', 'ស្វែងរកសាលា ហើយមើលកំណត់ត្រាសិស្សដែលមានសម្រាប់សាលានោះ។', [['#schools', 'ស្វែងរកសាលា']])}
-    <section class="page-content"><div class="shell"><form class="search-panel" id="school-form"><div class="form-grid"><div class="form-field"><label for="school-query">ឈ្មោះសាលារៀន</label><input id="school-query" name="q" value="${escapeHtml(query)}" placeholder="វាយឈ្មោះសាលា" /></div><div class="form-field"><label for="school-province">រាជធានី / ខេត្ត</label><input id="school-province" name="province" value="${escapeHtml(province)}" placeholder="ប្រសិនបើមានក្នុងទិន្នន័យ" /></div><div class="form-field"><label for="school-year">ឆ្នាំប្រឡង</label><select id="school-year" name="year">${yearOptions(year)}</select></div></div><div class="form-actions"><button class="btn btn-secondary" type="reset">សម្អាត</button><button class="btn btn-primary" type="submit">ស្វែងរកសាលា</button></div></form>
-      <div class="results-toolbar"><div><h2>${query || province ? `រកឃើញ ${khmerNumber(schools.length)} សាលា` : `សាលារៀន ${khmerNumber(schools.length)}`}</h2><p>ជ្រើសរើសសាលាដើម្បីមើលបញ្ជីសិស្ស</p></div></div>
-      ${schools.length ? `<div class="school-grid">${schools.map((school, index) => `<article class="school-card"><span class="school-code">${khmerNumber(index + 1)}</span><h2>${escapeHtml(school.name)}</h2><p>ទីតាំង: ${escapeHtml(studentProvince(school.records[0]) || 'មិនមានទិន្នន័យ')}</p><div class="school-card-stats"><span>${khmerNumber(school.records.length)} កំណត់ត្រា</span><span>${school.years.map(khmerNumber).join(', ')}</span></div><a class="table-link" href="#school/${encodeURIComponent(school.name)}">មើលសាលា →</a></article>`).join('')}</div>` : stateCard('empty', 'រកមិនឃើញសាលា', 'សាកល្បងផ្នែកខ្លីនៃឈ្មោះសាលា ឬសម្អាតតម្រង។')}
-    </div></section>`;
-  const form = document.querySelector('#school-form');
-  form.addEventListener('submit', event => { event.preventDefault(); routeTo('schools', Object.fromEntries(new FormData(form))); });
-  form.addEventListener('reset', () => setTimeout(() => routeTo('schools'), 0));
-}
-
-function renderSchoolDetail(encodedName, params) {
-  const name = safeDecode(encodedName);
-  const allRecords = students.filter(student => student['School Name'] === name);
-  if (!allRecords.length) { renderNotFound(); return; }
-  const query = params.get('q') || '';
-  const year = params.get('year') || '';
-  const grade = params.get('grade') || '';
-  const records = allRecords.filter(student => normalize(student.Name).includes(normalize(query)) && (!year || normalize(studentYear(student)) === normalize(year)) && (!grade || normalize(student.Grade) === normalize(grade)));
-  app.innerHTML = `${pageHero('ព័ត៌មានសាលា', 'មើលកំណត់ត្រាសិស្សដែលមាន និងស្វែងរកក្នុងសាលានេះ។', [['#schools', 'ស្វែងរកសាលា'], [`#school/${encodedName}`, name]])}
-    <section class="page-content"><div class="shell"><div class="search-panel"><div class="school-head"><span class="school-code">សាលា</span><div><h2>${escapeHtml(name)}</h2><p>${khmerNumber(allRecords.length)} កំណត់ត្រា · ${language === 'en' ? 'Exam years 2020–2025' : 'ឆ្នាំប្រឡង ២០២០–២០២៥'} · ${escapeHtml(studentProvince(allRecords[0]) || (language === 'en' ? 'Location unavailable' : 'ទីតាំងមិនមានទិន្នន័យ'))}</p></div></div></div>
-      <form class="search-panel" id="inside-school-form" style="margin-top:18px"><div class="form-grid"><div class="form-field"><label for="inside-name">ឈ្មោះសិស្ស</label><input id="inside-name" name="q" value="${escapeHtml(query)}" placeholder="ស្វែងរកក្នុងសាលា" /></div><div class="form-field"><label for="inside-year">ឆ្នាំ</label><select id="inside-year" name="year">${yearOptions(year)}</select></div><div class="form-field"><label for="inside-grade">និទ្ទេស</label><select id="inside-grade" name="grade"><option value="">${language === 'en' ? 'All grades' : 'គ្រប់និទ្ទេស'}</option>${['A','B','C','D','E','F'].map(value => `<option ${grade === value ? 'selected' : ''}>${value}</option>`).join('')}</select></div></div><div class="form-actions"><button class="btn btn-secondary" type="reset">សម្អាត</button><button class="btn btn-primary" type="submit">អនុវត្តតម្រង</button></div></form>
-      <div class="results-toolbar"><div><h2>សិស្ស ${khmerNumber(records.length)} នាក់</h2><p>កំណត់ត្រាដែលផ្គូផ្គងតម្រង</p></div></div>
-      ${records.length ? `<div class="table-wrap"><table class="results-table"><thead><tr><th>សិស្ស</th><th>ថ្ងៃកំណើត</th><th>ឆ្នាំ</th><th>និទ្ទេស</th><th>លទ្ធផល</th><th></th></tr></thead><tbody>${records.map(student => resultRow(student).replace(`<td>${escapeHtml(student['School Name'] || 'មិនមានទិន្នន័យ')}</td>`, '')).join('')}</tbody></table><div class="result-cards-mobile">${records.map(resultCard).join('')}</div></div>` : stateCard('empty', 'មិនមានកំណត់ត្រាផ្គូផ្គង', 'សូមសម្អាតតម្រង ឬសាកល្បងឈ្មោះផ្សេង។')}
-    </div></section>`;
-  const form = document.querySelector('#inside-school-form');
-  form.addEventListener('submit', event => { event.preventDefault(); routeTo(`school/${encodedName}`, Object.fromEntries(new FormData(form))); });
-  form.addEventListener('reset', () => setTimeout(() => routeTo(`school/${encodedName}`), 0));
 }
 
 function renderAbout() {
-  app.innerHTML = `${pageHero('អំពីវេទិកា', 'ស្វែងយល់ពីគោលបំណង ប្រភពទិន្នន័យ និងរបៀបប្រើប្រាស់ប្រព័ន្ធ។', [['#about', 'អំពីយើង']])}<section class="page-content"><div class="shell content-layout"><article class="prose-card"><h2>វេទិកានេះធ្វើអ្វី?</h2><p>BacII Result Finder ជួយសិស្ស ឪពុកម្តាយ និងសាលារៀន ស្វែងរកកំណត់ត្រាលទ្ធផលប្រឡងបាក់ឌុបដែលបានបញ្ចូលក្នុងប្រព័ន្ធ។ អ្នកអាចស្វែងរកដោយឈ្មោះ ថ្ងៃកំណើត លេខបេក្ខជន ឬសាលារៀន។</p><h2>របៀបស្វែងរក</h2><ol><li>ជ្រើសរើសការស្វែងរកសិស្ស ឬសាលា។</li><li>បញ្ចូលព័ត៌មានយ៉ាងហោចណាស់មួយ។</li><li>ប្រៀបធៀបឈ្មោះ ថ្ងៃកំណើត និងសាលា ដើម្បីកំណត់អត្តសញ្ញាណកំណត់ត្រាត្រឹមត្រូវ។</li><li>បើក “មើលលម្អិត” ដើម្បីមើលនិទ្ទេសតាមមុខវិជ្ជា។</li></ol><h2>ប្រភព និងការបដិសេធ</h2><p>ទិន្នន័យត្រូវបានដកស្រង់ពីសន្លឹកលទ្ធផលប្រឡងដែលបានផ្សព្វផ្សាយ។ កំហុសអាចកើតឡើងក្នុងដំណើរការបញ្ចូល ឬអានអក្សរ។ វេទិកានេះមិនអះអាងថាជាសេវាផ្លូវការរបស់ក្រសួងទេ ហើយព័ត៌មានសំខាន់គួរតែផ្ទៀងផ្ទាត់ជាមួយប្រភពផ្លូវការ។</p><h2>ឯកជនភាព</h2><p>ប្រព័ន្ធបង្ហាញតែព័ត៌មានដែលចាំបាច់សម្រាប់បែងចែកលទ្ធផលសិស្ស។ មិនមានការចូលគណនី ឬការផ្ទៀងផ្ទាត់អត្តសញ្ញាណទេ ហើយយើងជៀសវាងការបង្ហាញព័ត៌មានផ្ទាល់ខ្លួនដែលមិនចាំបាច់។</p></article><aside class="side-card-wrap"><div class="side-card"><h2>ត្រូវការជំនួយ?</h2><p>ទាក់ទងមកយើង ប្រសិនបើអ្នករកមិនឃើញកំណត់ត្រា ឬមិនដឹងរបៀបស្វែងរក។</p><a class="btn btn-primary" href="#contact">ទាក់ទងមកយើង</a></div><div class="side-card"><h2>ព័ត៌មានមិនត្រឹមត្រូវ?</h2><p>ផ្ញើព័ត៌មានលម្អិតដើម្បីឱ្យយើងអាចពិនិត្យកំណត់ត្រាឡើងវិញ។</p><a class="btn btn-secondary" href="#report">រាយការណ៍កំហុស</a></div></aside></div></section>`;
-}
-
-function renderContact(reportMode = false) {
-  const title = reportMode ? 'រាយការណ៍ព័ត៌មានខុស' : 'ទំនាក់ទំនង និងជំនួយ';
-  const description = reportMode ? 'ផ្ញើព័ត៌មានកំណត់ត្រាដែលមិនត្រឹមត្រូវ ដើម្បីឱ្យយើងពិនិត្យឡើងវិញ។' : 'ត្រូវការជំនួយក្នុងការស្វែងរក? អ្នកអាចទាក់ទងមកយើងតាម Telegram ឬ Email។';
-  app.innerHTML = `${pageHero(title, description, [[reportMode ? '#report' : '#contact', reportMode ? 'រាយការណ៍' : 'ទំនាក់ទំនង']])}<section class="page-content"><div class="shell"><div class="contact-grid"><article class="contact-card"><span class="contact-symbol">TG</span><h2>Telegram</h2><p>@Iamnotaproplayer<br />សម្រាប់សំណួររហ័ស និងការរាយការណ៍ព័ត៌មាន។</p><a class="btn btn-primary" href="https://t.me/Iamnotaproplayer" target="_blank" rel="noreferrer">ទាក់ទងតាម Telegram</a></article><article class="contact-card"><span class="contact-symbol">@</span><h2>Email</h2><p>investingseth@gmail.com<br />សម្រាប់ព័ត៌មានលម្អិត ឬភ្ជាប់ឯកសារយោង។</p><a class="btn btn-secondary" href="mailto:investingseth@gmail.com?subject=${reportMode ? 'Report incorrect BacII information' : 'BacII Result Finder help'}">ផ្ញើ Email</a></article></div><div class="report-box"><h2>${reportMode ? 'ព័ត៌មានដែលគួរផ្ញើមក' : 'រាយការណ៍ព័ត៌មានមិនត្រឹមត្រូវ'}</h2><p>${reportMode ? 'សូមបញ្ចូលឈ្មោះសិស្ស សាលា ឆ្នាំប្រឡង លេខទំព័រ (ប្រសិនបើមាន) និងពន្យល់ពីព័ត៌មានដែលត្រូវកែ។ កុំផ្ញើព័ត៌មានផ្ទាល់ខ្លួនដែលមិនចាំបាច់។' : 'បើឈ្មោះ ថ្ងៃកំណើត សាលា ឬនិទ្ទេសមិនត្រឹមត្រូវ សូមផ្ញើតំណភ្ជាប់កំណត់ត្រា និងពន្យល់ពីចំណុចដែលត្រូវពិនិត្យ។'}</p>${reportMode ? '<a class="btn btn-primary" href="mailto:investingseth@gmail.com?subject=Report incorrect BacII information">ចាប់ផ្តើមរាយការណ៍</a>' : '<a class="btn btn-secondary" href="#report">មើលការណែនាំរាយការណ៍</a>'}</div></div></section>`;
+  app.innerHTML = `${pageHero('អំពីវេទិកា', 'ស្វែងយល់ពីគោលបំណង ប្រភពទិន្នន័យ និងរបៀបប្រើប្រាស់ប្រព័ន្ធ។', [['#about', 'អំពីយើង']])}<section class="page-content"><div class="shell content-layout"><article class="prose-card"><h2>វេទិកានេះធ្វើអ្វី?</h2><p>BacII Result Finder ជួយសិស្ស ឪពុកម្តាយ និងសាលារៀន ស្វែងរកកំណត់ត្រាលទ្ធផលប្រឡងបាក់ឌុបដែលបានបញ្ចូលក្នុងប្រព័ន្ធ។ អ្នកអាចស្វែងរកដោយឈ្មោះ ថ្ងៃកំណើត លេខបេក្ខជន ឬសាលារៀន។</p><h2>របៀបស្វែងរក</h2><ol><li>បើកទំព័រស្វែងរកសិស្ស។</li><li>បញ្ចូលព័ត៌មានយ៉ាងហោចណាស់មួយ។</li><li>ប្រៀបធៀបឈ្មោះ ថ្ងៃកំណើត និងសាលា ដើម្បីកំណត់អត្តសញ្ញាណកំណត់ត្រាត្រឹមត្រូវ។</li><li>បើក “មើលលម្អិត” ដើម្បីមើលនិទ្ទេសតាមមុខវិជ្ជា។</li></ol><h2>ប្រភព និងការបដិសេធ</h2><p>ទិន្នន័យត្រូវបានដកស្រង់ពីសន្លឹកលទ្ធផលប្រឡងដែលបានផ្សព្វផ្សាយ។ កំហុសអាចកើតឡើងក្នុងដំណើរការបញ្ចូល ឬអានអក្សរ។ វេទិកានេះមិនអះអាងថាជាសេវាផ្លូវការរបស់ក្រសួងទេ ហើយព័ត៌មានសំខាន់គួរតែផ្ទៀងផ្ទាត់ជាមួយប្រភពផ្លូវការ។</p><h2>ឯកជនភាព</h2><p>ប្រព័ន្ធបង្ហាញតែព័ត៌មានដែលចាំបាច់សម្រាប់បែងចែកលទ្ធផលសិស្ស។ មិនមានការចូលគណនី ឬការផ្ទៀងផ្ទាត់អត្តសញ្ញាណទេ ហើយយើងជៀសវាងការបង្ហាញព័ត៌មានផ្ទាល់ខ្លួនដែលមិនចាំបាច់។</p></article><aside class="side-card-wrap"><div class="side-card"><h2>ត្រូវការជំនួយ?</h2><p>ទាក់ទងមកយើង ប្រសិនបើអ្នករកមិនឃើញកំណត់ត្រា ឬមិនដឹងរបៀបស្វែងរក។</p><a class="btn btn-primary" href="https://t.me/Iamnotaproplayer" target="_blank" rel="noreferrer">ទាក់ទងតាម Telegram</a></div><div class="side-card"><h2>ព័ត៌មានមិនត្រឹមត្រូវ?</h2><p>ផ្ញើព័ត៌មានលម្អិតដើម្បីឱ្យយើងអាចពិនិត្យកំណត់ត្រាឡើងវិញ។</p><a class="btn btn-secondary" href="mailto:investingseth@gmail.com?subject=Report incorrect BacII information">រាយការណ៍កំហុស</a></div></aside></div></section>`;
 }
 
 function renderPolicy(type) {
@@ -515,11 +466,7 @@ function renderRoute() {
   else if (root === 'students') renderStudentSearch();
   else if (root === 'results') renderResults(params);
   else if (root === 'student') renderStudentDetail(rest);
-  else if (root === 'schools') renderSchools(params);
-  else if (root === 'school') renderSchoolDetail(rest, params);
   else if (root === 'about') renderAbout();
-  else if (root === 'contact') renderContact(false);
-  else if (root === 'report') renderContact(true);
   else if (root === 'privacy' || root === 'disclaimer') renderPolicy(root);
   else renderNotFound();
   applyLanguage();
@@ -545,7 +492,6 @@ document.querySelectorAll('[data-language]').forEach(button => button.addEventLi
 }));
 
 window.addEventListener('hashchange', renderRoute);
-document.querySelector('#current-year').textContent = new Date().getFullYear();
 applyLanguage();
 
 fetch('./results.json')
