@@ -82,6 +82,7 @@ const english = new Map(Object.entries({
   , 'សម្រាប់គណៈគ្រប់គ្រងសាលា': 'For school management teams'
   , 'ប្រសិនបើក្រុមគ្រប់គ្រងសាលាចង់ស្វែងរកឈ្មោះសិស្សបានងាយស្រួល សូមទាក់ទងមកខ្ញុំ។': 'If your school management team wants an easier way to search student names, please contact me.'
   , 'បើកទំព័រស្វែងរកសិស្ស។': 'Open the student search page.'
+  , 'វេទិកាស្វែងរកឯករាជ្យ — មិនមែនជាសេវាផ្លូវការរបស់ក្រសួងទេ។': 'Independent lookup tool — not an official Ministry service.'
 }));
 
 const arabicToKhmer = { 0: '០', 1: '១', 2: '២', 3: '៣', 4: '៤', 5: '៥', 6: '៦', 7: '៧', 8: '៨', 9: '៩' };
@@ -275,6 +276,7 @@ function renderHome() {
             </div>
           </div>
         </form>
+        <p class="data-updated"><span aria-hidden="true"></span>${language === 'en' ? 'Data last updated: 29 August 2026' : 'ទិន្នន័យបានធ្វើបច្ចុប្បន្នភាពចុងក្រោយ៖ ២៩ សីហា ២០២៦'}</p>
       </div>
     </section>
 
@@ -407,7 +409,9 @@ function resultRow(student) {
 
 function resultCard(student) {
   const index = students.indexOf(student);
-  return `<article class="student-card"><div class="student-card-head"><span class="grade-badge">${escapeHtml(student.Grade || '—')}</span><div><h3>${escapeHtml(student.Name)}</h3><p class="school-name">${escapeHtml(student['School Name'] || 'មិនមានទិន្នន័យ')}</p></div><span class="status-badge ${normalize(student['Total Result']).includes('ធ្លាក់') ? 'failed' : ''}">${escapeHtml(student['Total Result'] || '—')}</span></div><div class="student-card-meta"><div><span class="meta-label">ថ្ងៃកំណើត</span><span class="meta-value">${escapeHtml(student.Birthday || 'មិនមានទិន្នន័យ')}</span></div><div><span class="meta-label">ឆ្នាំប្រឡង</span><span class="meta-value">${escapeHtml(khmerNumber(studentYear(student)))}</span></div></div><a class="btn btn-light" href="#student/${index}">មើលលទ្ធផលលម្អិត</a></article>`;
+  const failed = normalize(student['Total Result']).includes('ធ្លាក់');
+  const scores = Object.entries(subjectLabels).map(([key, [khmer, englishLabel]]) => `<tr><td>${language === 'en' ? englishLabel : khmer}</td><td><span class="grade-badge">${escapeHtml(student.Scores?.[key] || '—')}</span></td></tr>`).join('');
+  return `<article class="student-card ${failed ? 'result-failed' : 'result-passed'}"><div class="student-card-head"><span class="grade-badge">${escapeHtml(student.Grade || '—')}</span><div><h3>${escapeHtml(student.Name)}</h3><p class="school-name">${escapeHtml(student['School Name'] || 'មិនមានទិន្នន័យ')}</p></div><span class="status-badge ${failed ? 'failed' : ''}">${escapeHtml(student['Total Result'] || '—')}</span></div><div class="student-card-meta"><div><span class="meta-label">លេខបេក្ខជន</span><span class="meta-value">${escapeHtml(studentId(student) || 'មិនមានទិន្នន័យ')}</span></div><div><span class="meta-label">ថ្ងៃកំណើត</span><span class="meta-value">${escapeHtml(student.Birthday || 'មិនមានទិន្នន័យ')}</span></div><div><span class="meta-label">ឆ្នាំប្រឡង</span><span class="meta-value">${escapeHtml(khmerNumber(studentYear(student)))}</span></div></div><details class="score-accordion"><summary>និទ្ទេសតាមមុខវិជ្ជា</summary><table><tbody>${scores}</tbody></table></details><a class="btn btn-light" href="#student/${index}">មើលលទ្ធផលលម្អិត</a></article>`;
 }
 
 function drawResults(params) {
@@ -444,6 +448,10 @@ function renderStudentDetail(index) {
     </div></section>`;
 }
 
+function renderAbout() {
+  app.innerHTML = `${pageHero('អំពីវេទិកា', 'ស្វែងយល់ពីគោលបំណង ប្រភពទិន្នន័យ និងរបៀបប្រើប្រាស់ប្រព័ន្ធ។', [['#about', 'អំពីយើង']])}<section class="page-content"><div class="shell content-layout"><article class="prose-card"><h2>វេទិកានេះធ្វើអ្វី?</h2><p>BacII Result Finder ជួយសិស្ស ឪពុកម្តាយ និងសាលារៀន ស្វែងរកកំណត់ត្រាលទ្ធផលប្រឡងបាក់ឌុបដែលបានបញ្ចូលក្នុងប្រព័ន្ធ។ អ្នកអាចស្វែងរកដោយឈ្មោះ ថ្ងៃកំណើត លេខបេក្ខជន ឬសាលារៀន។</p><h2>របៀបស្វែងរក</h2><ol><li>បើកទំព័រស្វែងរកសិស្ស។</li><li>បញ្ចូលព័ត៌មានយ៉ាងហោចណាស់មួយ។</li><li>ប្រៀបធៀបឈ្មោះ ថ្ងៃកំណើត និងសាលា ដើម្បីកំណត់អត្តសញ្ញាណកំណត់ត្រាត្រឹមត្រូវ។</li><li>បើក “មើលលម្អិត” ដើម្បីមើលនិទ្ទេសតាមមុខវិជ្ជា។</li></ol><h2>ប្រភព និងការបដិសេធ</h2><p>ទិន្នន័យត្រូវបានដកស្រង់ពីសន្លឹកលទ្ធផលប្រឡងដែលបានផ្សព្វផ្សាយ។ កំហុសអាចកើតឡើងក្នុងដំណើរការបញ្ចូល ឬអានអក្សរ។ វេទិកានេះមិនអះអាងថាជាសេវាផ្លូវការរបស់ក្រសួងទេ ហើយព័ត៌មានសំខាន់គួរតែផ្ទៀងផ្ទាត់ជាមួយប្រភពផ្លូវការ។</p><h2>ឯកជនភាព</h2><p>ប្រព័ន្ធបង្ហាញតែព័ត៌មានដែលចាំបាច់សម្រាប់បែងចែកលទ្ធផលសិស្ស។ មិនមានការចូលគណនី ឬការផ្ទៀងផ្ទាត់អត្តសញ្ញាណទេ ហើយយើងជៀសវាងការបង្ហាញព័ត៌មានផ្ទាល់ខ្លួនដែលមិនចាំបាច់។</p></article><aside class="side-card-wrap"><div class="side-card"><h2>ត្រូវការជំនួយ?</h2><p>ទាក់ទងមកយើង ប្រសិនបើអ្នករកមិនឃើញកំណត់ត្រា ឬមិនដឹងរបៀបស្វែងរក។</p><a class="btn btn-primary" href="https://t.me/Iamnotaproplayer" target="_blank" rel="noreferrer">ទាក់ទងតាម Telegram</a></div><div class="side-card"><h2>ព័ត៌មានមិនត្រឹមត្រូវ?</h2><p>ផ្ញើព័ត៌មានលម្អិតដើម្បីឱ្យយើងអាចពិនិត្យកំណត់ត្រាឡើងវិញ។</p><a class="btn btn-secondary" href="mailto:investingseth@gmail.com?subject=Report incorrect BacII information">រាយការណ៍កំហុស</a></div></aside></div></section>`;
+}
+
 function renderPolicy(type) {
   const privacy = type === 'privacy';
   app.innerHTML = `${pageHero(privacy ? 'ឯកជនភាព' : 'ការបដិសេធ', privacy ? 'របៀបដែលវេទិកាគោរពឯកជនភាពរបស់អ្នកប្រើប្រាស់។' : 'ព័ត៌មានសំខាន់អំពីភាពត្រឹមត្រូវ និងស្ថានភាពរបស់វេទិកា។', [[`#${type}`, privacy ? 'ឯកជនភាព' : 'ការបដិសេធ']])}<section class="page-content"><div class="shell"><article class="prose-card">${privacy ? '<h2>ការស្វែងរករបស់អ្នក</h2><p>វេទិកានេះមិនត្រូវការគណនី ការចូលប្រើ ឬការផ្ទៀងផ្ទាត់អត្តសញ្ញាណទេ។ ការស្វែងរកត្រូវបានអនុវត្តក្នុងកម្មវិធីរុករករបស់អ្នកដោយប្រើឯកសារទិន្នន័យដែលបានផ្សព្វផ្សាយជាមួយគេហទំព័រ។</p><h2>ព័ត៌មានសិស្ស</h2><p>យើងព្យាយាមបង្ហាញតែព័ត៌មានដែលចាំបាច់សម្រាប់សម្គាល់កំណត់ត្រា និងលទ្ធផលប្រឡង។ សូមកុំប្រើព័ត៌មាននេះសម្រាប់ការរំខាន ការរើសអើង ឬគោលបំណងដែលប៉ះពាល់ដល់សិស្ស។</p>' : '<h2>មិនមែនជាសេវាផ្លូវការ</h2><p>វេទិកានេះជាគម្រោងឯករាជ្យ និងមិនត្រូវបានចាត់ទុកថាជាគេហទំព័រផ្លូវការរបស់ក្រសួងអប់រំ យុវជន និងកីឡា លុះត្រាតែមានការអនុញ្ញាតជាក់លាក់ជាលាយលក្ខណ៍អក្សរ។</p><h2>ភាពត្រឹមត្រូវនៃទិន្នន័យ</h2><p>ការដកស្រង់ទិន្នន័យអាចមានកំហុសអក្ខរាវិរុទ្ធ ឬការផ្គូផ្គង។ សូមប្រើប្រភពផ្លូវការជាចុងក្រោយសម្រាប់ការបញ្ជាក់លទ្ធផល។ បើអ្នករកឃើញកំហុស សូមរាយការណ៍មកយើង។</p>'}</article></div></section>`;
@@ -466,6 +474,7 @@ function renderRoute() {
   else if (root === 'students') renderStudentSearch();
   else if (root === 'results') renderResults(params);
   else if (root === 'student') renderStudentDetail(rest);
+  else if (root === 'about') renderAbout();
   else if (root === 'privacy' || root === 'disclaimer') renderPolicy(root);
   else renderNotFound();
   applyLanguage();
