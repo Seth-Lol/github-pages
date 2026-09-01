@@ -295,19 +295,19 @@ function renderHome(params = new URLSearchParams()) {
 
     <section class="section statistics-section">
       <div class="shell">
-        <div class="section-heading"><p class="section-kicker">${language === 'en' ? 'National coverage' : 'ទិន្នន័យទូទាំងប្រទេស'}</p><h2>${language === 'en' ? 'BACII Results at a Glance' : 'ទិន្នន័យលទ្ធផលបាក់ឌុបសង្ខេប'}</h2></div>
+        <div class="section-heading"><h2>${language === 'en' ? 'BACII Results at a Glance' : 'ទិន្នន័យលទ្ធផលបាក់ឌុបសង្ខេប'}</h2></div>
         <div class="stats-grid portal-stats"><article class="stat"><span class="stat-icon" aria-hidden="true">ST</span><strong>500K+</strong><span>${language === 'en' ? 'Students' : 'សិស្ស'}</span></article><article class="stat"><span class="stat-icon" aria-hidden="true">SC</span><strong>1200+</strong><span>${language === 'en' ? 'Schools' : 'សាលារៀន'}</span></article><article class="stat"><span class="stat-icon" aria-hidden="true">PV</span><strong>25</strong><span>${language === 'en' ? 'Provinces' : 'រាជធានី-ខេត្ត'}</span></article></div>
       </div>
     </section>
 
     <section class="section section-alt">
       <div class="shell">
-        <div class="section-heading"><p class="section-kicker">របៀបប្រើប្រាស់</p><h2>ត្រឹមតែ ៣ ជំហាន</h2></div>
+        <div class="section-heading"><h2>ត្រឹមតែ ៣ ជំហាន</h2></div>
         <div class="steps"><div class="step"><h3>បញ្ចូលព័ត៌មាន</h3><p>វាយឈ្មោះ ថ្ងៃកំណើត លេខបេក្ខជន ឬសាលា។</p></div><div class="step"><h3>ស្វែងរកកំណត់ត្រា</h3><p>ប្រព័ន្ធនឹងផ្គូផ្គងព័ត៌មានជាមួយទិន្នន័យដែលមាន។</p></div><div class="step"><h3>មើលលទ្ធផល</h3><p>បើកព័ត៌មានលម្អិត និងមើលនិទ្ទេសតាមមុខវិជ្ជា។</p></div></div>
       </div>
     </section>
     <section class="section"><div class="shell"><div class="notice"><span class="notice-icon">i</span><div><h2>ព័ត៌មានសំខាន់</h2><p>វេទិកានេះជាឧបករណ៍ស្វែងរកឯករាជ្យ និងមិនមែនជាគេហទំព័រផ្លូវការរបស់ក្រសួងអប់រំទេ។ សូមផ្ទៀងផ្ទាត់ព័ត៌មានសំខាន់ជាមួយប្រភពផ្លូវការ។</p></div></div></div></section>
-    <section class="section contact-section" id="home-contact"><div class="shell"><div class="contact-heading"><p class="section-kicker">${language === 'en' ? 'Contact' : 'ទំនាក់ទំនង'}</p><h2>${language === 'en' ? 'Need Help or Want to Register Your School?' : 'ត្រូវការជំនួយ ឬចង់ចុះឈ្មោះសាលារបស់អ្នក?'}</h2><p>${language === 'en' ? 'Schools can contact us to update information or request support.' : 'សាលារៀនអាចទាក់ទងមកយើង ដើម្បីកែប្រែព័ត៌មាន ឬស្នើសុំជំនួយ។'}</p></div><div class="contact-cards"><a class="contact-card" href="https://t.me/Iamnotaproplayer" target="_blank" rel="noreferrer"><span>TG</span><div><small>Telegram</small><strong>@Iamnotaproplayer</strong></div><b>→</b></a><a class="contact-card" href="mailto:investingseth@gmail.com"><span>@</span><div><small>Email</small><strong>investingseth@gmail.com</strong></div><b>→</b></a></div></div></section>`;
+    <section class="section contact-section" id="home-contact"><div class="shell"><div class="contact-heading"><h2>${language === 'en' ? 'Need Help or Want to Register Your School?' : 'ត្រូវការជំនួយ ឬចង់ចុះឈ្មោះសាលារបស់អ្នក?'}</h2><p>${language === 'en' ? 'Schools can contact us to update information or request support.' : 'សាលារៀនអាចទាក់ទងមកយើង ដើម្បីកែប្រែព័ត៌មាន ឬស្នើសុំជំនួយ។'}</p></div><div class="contact-cards"><a class="contact-card" href="https://t.me/Iamnotaproplayer" target="_blank" rel="noreferrer"><span>TG</span><div><small>Telegram</small><strong>@Iamnotaproplayer</strong></div><b>→</b></a><a class="contact-card" href="mailto:investingseth@gmail.com"><span>@</span><div><small>Email</small><strong>investingseth@gmail.com</strong></div><b>→</b></a></div></div></section>`;
   bindHomeSearch();
   document.querySelector('#hero-search-button').addEventListener('click', () => document.querySelector('#home-search-card').scrollIntoView({ behavior: 'smooth', block: 'start' }));
   if (params.get('tab') === 'school') document.querySelector('[data-search-type="school"]').click();
