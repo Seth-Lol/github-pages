@@ -453,8 +453,6 @@ input, select { min-height: 52px; border-color: #b9c9d7; border-radius: 9px; fon
 .hero-copy h1 { max-width: 690px; margin-inline: 0; font: 800 clamp(2.8rem, 5.5vw, 5rem)/1.12 Inter, "Noto Sans Khmer", sans-serif; letter-spacing: -.045em; }
 html[lang="km"] .hero-copy h1 { font-family: "Noto Sans Khmer", sans-serif; line-height: 1.35; letter-spacing: -.025em; }
 .hero-copy .hero-lead { max-width: 620px; margin-inline: 0; font-size: 19px; }
-.hero-search-button { min-width: 210px; gap: 10px; }
-.hero-search-button span { font-size: 22px; }
 
 .portal-illustration { position: relative; width: min(100%, 440px); aspect-ratio: 1.05; justify-self: end; display: grid; place-items: center; animation: section-in .65s .08s ease both; }
 .illustration-orbit { position: absolute; border-radius: 50%; }

@@ -252,7 +252,6 @@ function renderHome(params = new URLSearchParams()) {
           <p class="eyebrow">ទិន្នន័យលទ្ធផលប្រឡងឆ្នាំ ២០២០–២០២៥</p>
           <h1>${language === 'en' ? 'BACII Examination Results' : 'លទ្ធផលប្រឡងបាក់ឌុប'}</h1>
           <p class="hero-lead">${language === 'en' ? 'Find your national exam results quickly and easily' : 'ស្វែងរកលទ្ធផលប្រឡងថ្នាក់ជាតិរបស់អ្នកបានរហ័ស និងងាយស្រួល'}</p>
-          <button class="btn btn-primary hero-search-button" id="hero-search-button" type="button"><span aria-hidden="true">⌕</span>${language === 'en' ? 'Search Results' : 'ស្វែងរកលទ្ធផល'}</button>
         </div>
         <div class="portal-illustration" role="img" aria-label="Education result document illustration">
           <div class="illustration-orbit orbit-one"></div><div class="illustration-orbit orbit-two"></div>
@@ -308,7 +307,6 @@ function renderHome(params = new URLSearchParams()) {
     </section>
     <section class="section"><div class="shell"><div class="notice"><span class="notice-icon">i</span><div><h2>ព័ត៌មានសំខាន់</h2><p>វេទិកានេះជាឧបករណ៍ស្វែងរកឯករាជ្យ និងមិនមែនជាគេហទំព័រផ្លូវការរបស់ក្រសួងអប់រំទេ។ សូមផ្ទៀងផ្ទាត់ព័ត៌មានសំខាន់ជាមួយប្រភពផ្លូវការ។</p></div></div></div></section>`;
   bindHomeSearch();
-  document.querySelector('#hero-search-button').addEventListener('click', () => document.querySelector('#home-search-card').scrollIntoView({ behavior: 'smooth', block: 'start' }));
   if (params.get('tab') === 'school') document.querySelector('[data-search-type="school"]').click();
   const target = (params.get('focus') === 'search' || params.get('tab') === 'school') ? '#home-search-card' : '';
   if (target) requestAnimationFrame(() => document.querySelector(target)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
