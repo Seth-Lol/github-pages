@@ -444,8 +444,6 @@ input, select { min-height: 52px; border-color: #b9c9d7; border-radius: 9px; fon
 }
 
 /* Education portal brief refinements */
-.support-button { min-height: 40px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; background: var(--gold); color: #14263a; padding: 0 15px; font: 700 12px/1 Inter, sans-serif; text-decoration: none; transition: transform .18s ease, background .18s ease; }
-.support-button:hover { transform: translateY(-1px); background: #e8b73d; }
 .primary-nav { gap: 2px; }
 .primary-nav a { padding-inline: 10px; white-space: nowrap; }
 
@@ -490,18 +488,6 @@ html[lang="km"] .hero-copy h1 { font-family: "Noto Sans Khmer", sans-serif; line
 .portal-stats .stat > span:last-child { font-size: 14px; }
 .stat-icon { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 11px; background: var(--primary-light); color: var(--primary); font: 800 11px/1 Inter, sans-serif; }
 
-.contact-section { border-top: 1px solid #d6e1eb; background: linear-gradient(140deg, #0f3d91, #123f73); color: #fff; }
-.contact-heading { max-width: 720px; margin: 0 auto 30px; text-align: center; }
-.contact-heading h2 { margin: 0; font-size: clamp(1.8rem, 4vw, 2.7rem); line-height: 1.45; }
-.contact-heading > p:last-child { margin: 12px 0 0; color: #d8e4f4; font-size: 16px; }
-.contact-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; max-width: 850px; margin: 0 auto; }
-.contact-card { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px; border: 1px solid rgba(255,255,255,.22); border-radius: 14px; background: rgba(255,255,255,.1); color: #fff; padding: 20px; text-decoration: none; transition: transform .2s ease, background .2s ease; }
-.contact-card:hover { transform: translateY(-3px); background: rgba(255,255,255,.16); }
-.contact-card > span { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 11px; background: var(--gold); color: #17283b; font: 800 12px/1 Inter, sans-serif; }
-.contact-card small, .contact-card strong { display: block; }
-.contact-card small { color: #c9d8ea; font-size: 11px; }
-.contact-card strong { margin-top: 3px; font-size: 14px; overflow-wrap: anywhere; }
-.contact-card > b { color: #f4c64d; font-size: 20px; }
 .official-result-card { overflow: hidden; border-top: 5px solid var(--primary); }
 .result-document-label { display: flex; align-items: center; gap: 9px; border-bottom: 1px solid var(--border); background: #f5f8fb; color: var(--primary); padding: 13px 24px; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
 .total-score-field { background: var(--gold-light); }
@@ -511,7 +497,6 @@ html[lang="km"] .hero-copy h1 { font-family: "Noto Sans Khmer", sans-serif; line
 @keyframes section-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
 @media (max-width: 1120px) {
-  .support-button { display: none; }
   .primary-nav a { padding-inline: 8px; font-size: 12px; }
   .hero-inner { gap: 34px; }
 }
@@ -529,7 +514,6 @@ html[lang="km"] .hero-copy h1 { font-family: "Noto Sans Khmer", sans-serif; line
   .portal-illustration { width: min(90%, 320px); }
   .hero-copy h1 { font-size: clamp(2.35rem, 11vw, 3.7rem); }
   .search-card-heading { padding-inline: 18px; }
-  .contact-cards { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 520px) {
