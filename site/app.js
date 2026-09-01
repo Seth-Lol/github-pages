@@ -1,7 +1,7 @@
 const app = document.querySelector('#app');
 const menuButton = document.querySelector('#menu-toggle');
 const navigation = document.querySelector('#primary-nav');
-const EXAM_YEARS = ['2025', '2024', '2023', '2022', '2021', '2020'];
+const EXAM_YEARS = ['2026'];
 let language = localStorage.getItem('bacii-language') === 'en' ? 'en' : 'km';
 
 const english = new Map(Object.entries({
@@ -10,7 +10,7 @@ const english = new Map(Object.entries({
   'តំណភ្ជាប់': 'Explore', 'របៀបប្រើប្រាស់': 'How to Search', 'ជំនួយ': 'Help', 'រាយការណ៍ព័ត៌មានខុស': 'Report Incorrect Information', 'ឯកជនភាព': 'Privacy',
   'ជួយសិស្ស និងគ្រួសារ ស្វែងរកព័ត៌មានលទ្ធផលប្រឡងបានងាយស្រួល និងឆាប់រហ័ស។': 'Helping students and families find examination results quickly and easily.',
   'វេទិកានេះមិនមែនជាសេវាផ្លូវការរបស់ក្រសួងទេ លុះត្រាតែមានការអនុញ្ញាតជាក់លាក់។': 'This platform is not an official Ministry service unless explicitly authorized.',
-  'ទិន្នន័យលទ្ធផលប្រឡងឆ្នាំ ២០២០–២០២៥': 'Examination records from 2020–2025',
+  'ទិន្នន័យលទ្ធផលប្រឡងឆ្នាំ ២០២៦': '2026 examination records',
   'ស្វែងរកលទ្ធផលបាក់ឌុបបានងាយ និងរហ័ស': 'Find BacII results quickly and easily',
   'ស្វែងរកតាមឈ្មោះ ថ្ងៃខែឆ្នាំកំណើត លេខបេក្ខជន ឬសាលា។ គាំទ្រការស្វែងរកជាភាសាខ្មែរ និងប្រើបានល្អលើទូរស័ព្ទ។': 'Search by name, date of birth, candidate number, or school. Khmer names are fully supported on mobile and desktop.',
   'ឈ្មោះសិស្ស': 'Student name', 'លេខបេក្ខជន': 'Candidate number', 'ថ្ងៃខែឆ្នាំកំណើត': 'Date of birth', 'សាលារៀន': 'School',
@@ -87,21 +87,32 @@ const english = new Map(Object.entries({
 
 const arabicToKhmer = { 0: '០', 1: '១', 2: '២', 3: '៣', 4: '៤', 5: '៥', 6: '៦', 7: '៧', 8: '៨', 9: '៩' };
 const khmerToArabic = Object.fromEntries(Object.entries(arabicToKhmer).map(([key, value]) => [value, key]));
-const subjectLabels = {
-  Khmer: ['ភាសាខ្មែរ', 'Khmer'],
-  Math: ['គណិតវិទ្យា', 'Mathematics'],
-  Physic: ['រូបវិទ្យា', 'Physics'],
-  Chemistry: ['គីមីវិទ្យា', 'Chemistry'],
-  Bio: ['ជីវវិទ្យា', 'Biology'],
-  History: ['ប្រវត្តិវិទ្យា', 'History'],
-  Language: ['ភាសាបរទេស', 'Foreign Language'],
-};
+const scienceSubjects = [
+  [['Khmer'], 'ភាសាខ្មែរ', 'Khmer'],
+  [['Math', 'Mathematics'], 'គណិតវិទ្យា', 'Mathematics'],
+  [['Physic', 'Physics'], 'រូបវិទ្យា', 'Physics'],
+  [['Chemistry'], 'គីមីវិទ្យា', 'Chemistry'],
+  [['Bio', 'Biology'], 'ជីវវិទ្យា', 'Biology'],
+  [['History'], 'ប្រវត្តិវិទ្យា', 'History'],
+  [['Language', 'Foreign Language'], 'ភាសាបរទេស', 'Foreign Language'],
+];
+const socialScienceSubjects = [
+  [['Math', 'Mathematics'], 'គណិតវិទ្យា', 'Mathematics'],
+  [['Khmer'], 'ភាសាខ្មែរ', 'Khmer'],
+  [['Geography'], 'ភូមិវិទ្យា', 'Geography'],
+  [['History'], 'ប្រវត្តិវិទ្យា', 'History'],
+  [['Language', 'Foreign Language'], 'ភាសាបរទេស', 'Foreign Language'],
+  [['Moral and Civic', 'Moral', 'Civics'], 'សីលធម៌ និងពលរដ្ឋវិជ្ជា', 'Moral and Civic'],
+  [['Earth Science', 'EarthScience'], 'ផែនដីវិទ្យា', 'Earth Science'],
+];
 
 let students = [];
 let loadError = false;
 let homeSearchType = 'name';
 let currentResults = [];
 let currentPage = 1;
+let revealRun = 0;
+let revealTimers = [];
 const pageSize = 8;
 
 function escapeHtml(value) {
@@ -169,9 +180,8 @@ function applyLanguage() {
   });
 }
 
-function yearOptions(selected = '', includeAll = true) {
-  const all = includeAll ? `<option value="">${language === 'en' ? 'All years' : 'គ្រប់ឆ្នាំ'}</option>` : '';
-  return `${all}${EXAM_YEARS.map(year => `<option value="${year}" ${selected === year ? 'selected' : ''}>${khmerNumber(year)}</option>`).join('')}`;
+function yearOptions(selected = '') {
+  return EXAM_YEARS.map(year => `<option value="${year}" ${selected === year || !selected ? 'selected' : ''}>${khmerNumber(year)}</option>`).join('');
 }
 
 function getValue(student, ...keys) {
@@ -184,7 +194,21 @@ function studentId(student) {
 }
 
 function studentYear(student) {
-  return getValue(student, 'Year', 'Exam Year') || '2025';
+  return '2026';
+}
+
+function isSocialScienceStudent(student) {
+  const track = normalize(getValue(student, 'Track', 'Stream', 'Study Track', 'Group'));
+  const scoreKeys = Object.keys(student.Scores || {}).map(normalize);
+  return track.includes('social') || track.includes('សង្គម') || ['geography', 'moral and civic', 'earth science', 'earthscience'].some(subject => scoreKeys.includes(subject));
+}
+
+function subjectsFor(student) {
+  return isSocialScienceStudent(student) ? socialScienceSubjects : scienceSubjects;
+}
+
+function subjectScore(student, aliases) {
+  return getValue(student.Scores || {}, ...aliases) || '—';
 }
 
 function studentProvince(student) {
@@ -249,7 +273,7 @@ function renderHome(params = new URLSearchParams()) {
     <section class="hero">
       <div class="shell hero-inner">
         <div class="hero-copy">
-          <p class="eyebrow">ទិន្នន័យលទ្ធផលប្រឡងឆ្នាំ ២០២០–២០២៥</p>
+          <p class="eyebrow">ទិន្នន័យលទ្ធផលប្រឡងឆ្នាំ ២០២៦</p>
           <h1>${language === 'en' ? 'BACII Examination Results' : 'លទ្ធផលប្រឡងបាក់ឌុប'}</h1>
           <p class="hero-lead">${language === 'en' ? 'Find your national exam results quickly and easily' : 'ស្វែងរកលទ្ធផលប្រឡងថ្នាក់ជាតិរបស់អ្នកបានរហ័ស និងងាយស្រួល'}</p>
         </div>
@@ -275,7 +299,7 @@ function renderHome(params = new URLSearchParams()) {
             <div id="home-standard-search">
               <label for="home-query" id="home-search-label">ឈ្មោះពេញ ឬផ្នែកណាមួយនៃឈ្មោះ</label>
               <div class="home-search-row">
-                <div class="home-year"><label class="sr-only" for="home-year">ឆ្នាំប្រឡង</label><select id="home-year" name="year" aria-label="ឆ្នាំប្រឡង">${yearOptions('2025')}</select></div>
+                <div class="home-year"><label class="sr-only" for="home-year">ឆ្នាំប្រឡង</label><select id="home-year" name="year" aria-label="ឆ្នាំប្រឡង">${yearOptions('2026')}</select></div>
                 <div class="input-with-icon"><span class="input-symbol" aria-hidden="true">⌕</span><input id="home-query" name="query" autocomplete="off" enterkeyhint="search" placeholder="ឧ. ឈុំ សុខរិទ្ធ" required /></div>
                 <button class="btn btn-primary" type="submit">ស្វែងរកឥឡូវ</button>
               </div>
@@ -429,14 +453,12 @@ function sortStudents(list, sort) {
 function resultRow(student) {
   const index = students.indexOf(student);
   const candidate = studentId(student) || `ទំព័រ ${khmerNumber(student['Page Number'] || '—')}`;
-  return `<tr><td class="student-cell"><strong>${escapeHtml(student.Name)}</strong><span>${escapeHtml(candidate)}</span></td><td>${escapeHtml(student.Birthday || 'មិនមានទិន្នន័យ')}</td><td>${escapeHtml(student['School Name'] || 'មិនមានទិន្នន័យ')}</td><td><span class="year-badge">${escapeHtml(khmerNumber(studentYear(student)))}</span></td><td><span class="grade-badge">${escapeHtml(student.Grade || '—')}</span></td><td><span class="status-badge ${normalize(student['Total Result']).includes('ធ្លាក់') ? 'failed' : ''}">${escapeHtml(student['Total Result'] || '—')}</span></td><td><a class="table-link" href="#student/${index}">មើលលម្អិត →</a></td></tr>`;
+  return `<tr><td class="student-cell"><strong>${escapeHtml(student.Name)}</strong><span>${escapeHtml(candidate)}</span></td><td>${escapeHtml(student.Birthday || 'មិនមានទិន្នន័យ')}</td><td>${escapeHtml(student['School Name'] || 'មិនមានទិន្នន័យ')}</td><td><span class="year-badge">${escapeHtml(khmerNumber(studentYear(student)))}</span></td><td><a class="table-link" href="#student/${index}">មើលលទ្ធផល →</a></td></tr>`;
 }
 
 function resultCard(student) {
   const index = students.indexOf(student);
-  const failed = normalize(student['Total Result']).includes('ធ្លាក់');
-  const scores = Object.entries(subjectLabels).map(([key, [khmer, englishLabel]]) => `<tr><td>${language === 'en' ? englishLabel : khmer}</td><td><span class="grade-badge">${escapeHtml(student.Scores?.[key] || '—')}</span></td></tr>`).join('');
-  return `<article class="student-card ${failed ? 'result-failed' : 'result-passed'}"><div class="student-card-head"><span class="grade-badge">${escapeHtml(student.Grade || '—')}</span><div><h3>${escapeHtml(student.Name)}</h3><p class="school-name">${escapeHtml(student['School Name'] || 'មិនមានទិន្នន័យ')}</p></div><span class="status-badge ${failed ? 'failed' : ''}">${escapeHtml(student['Total Result'] || '—')}</span></div><div class="student-card-meta"><div><span class="meta-label">លេខបេក្ខជន</span><span class="meta-value">${escapeHtml(studentId(student) || 'មិនមានទិន្នន័យ')}</span></div><div><span class="meta-label">ថ្ងៃកំណើត</span><span class="meta-value">${escapeHtml(student.Birthday || 'មិនមានទិន្នន័យ')}</span></div><div><span class="meta-label">ឆ្នាំប្រឡង</span><span class="meta-value">${escapeHtml(khmerNumber(studentYear(student)))}</span></div></div><details class="score-accordion"><summary>និទ្ទេសតាមមុខវិជ្ជា</summary><table><tbody>${scores}</tbody></table></details><a class="btn btn-light" href="#student/${index}">មើលលទ្ធផលលម្អិត</a></article>`;
+  return `<article class="student-card"><div class="student-card-head"><div><h3>${escapeHtml(student.Name)}</h3><p class="school-name">${escapeHtml(student['School Name'] || 'មិនមានទិន្នន័យ')}</p></div></div><div class="student-card-meta"><div><span class="meta-label">លេខបេក្ខជន</span><span class="meta-value">${escapeHtml(studentId(student) || 'មិនមានទិន្នន័យ')}</span></div><div><span class="meta-label">ថ្ងៃកំណើត</span><span class="meta-value">${escapeHtml(student.Birthday || 'មិនមានទិន្នន័យ')}</span></div><div><span class="meta-label">ឆ្នាំប្រឡង</span><span class="meta-value">${escapeHtml(khmerNumber(studentYear(student)))}</span></div></div><a class="btn btn-light" href="#student/${index}">មើលលទ្ធផល</a></article>`;
 }
 
 function drawResults(params) {
@@ -452,8 +474,8 @@ function drawResults(params) {
   const visible = sorted.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const pageButtons = Array.from({ length: pages }, (_, index) => index + 1).map(page => `<button type="button" class="${page === currentPage ? 'active' : ''}" data-page="${page}" aria-label="Page ${page}">${khmerNumber(page)}</button>`).join('');
   area.innerHTML = `
-    <div class="results-toolbar"><div><h2>រកឃើញ ${khmerNumber(currentResults.length)} លទ្ធផល</h2><p>បង្ហាញ ${khmerNumber((currentPage - 1) * pageSize + 1)}–${khmerNumber(Math.min(currentPage * pageSize, sorted.length))} នៃ ${khmerNumber(sorted.length)}</p></div><div class="sort-control"><label for="sort-results">តម្រៀបតាម</label><select id="sort-results"><option value="name" ${sort === 'name' ? 'selected' : ''}>ឈ្មោះ</option><option value="grade" ${sort === 'grade' ? 'selected' : ''}>និទ្ទេស</option><option value="school" ${sort === 'school' ? 'selected' : ''}>សាលា</option></select></div></div>
-    <div class="table-wrap"><table class="results-table"><thead><tr><th>សិស្ស</th><th>ថ្ងៃកំណើត</th><th>សាលា</th><th>ឆ្នាំ</th><th>និទ្ទេស</th><th>លទ្ធផល</th><th></th></tr></thead><tbody>${visible.map(resultRow).join('')}</tbody></table><div class="result-cards-mobile">${visible.map(resultCard).join('')}</div></div>
+    <div class="results-toolbar"><div><h2>រកឃើញ ${khmerNumber(currentResults.length)} លទ្ធផល</h2><p>បង្ហាញ ${khmerNumber((currentPage - 1) * pageSize + 1)}–${khmerNumber(Math.min(currentPage * pageSize, sorted.length))} នៃ ${khmerNumber(sorted.length)}</p></div><div class="sort-control"><label for="sort-results">តម្រៀបតាម</label><select id="sort-results"><option value="name" ${sort === 'name' ? 'selected' : ''}>ឈ្មោះ</option><option value="school" ${sort === 'school' ? 'selected' : ''}>សាលា</option></select></div></div>
+    <div class="table-wrap"><table class="results-table"><thead><tr><th>សិស្ស</th><th>ថ្ងៃកំណើត</th><th>សាលា</th><th>ឆ្នាំ</th><th></th></tr></thead><tbody>${visible.map(resultRow).join('')}</tbody></table><div class="result-cards-mobile">${visible.map(resultCard).join('')}</div></div>
     ${pages > 1 ? `<nav class="pagination" aria-label="Results pages"><button type="button" data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>‹</button>${pageButtons}<button type="button" data-page="${currentPage + 1}" ${currentPage === pages ? 'disabled' : ''}>›</button></nav>` : ''}`;
   document.querySelector('#sort-results').addEventListener('change', event => { params.set('sort', event.target.value); params.delete('page'); routeTo('results', Object.fromEntries(params)); });
   document.querySelectorAll('[data-page]').forEach(button => button.addEventListener('click', () => { params.set('page', button.dataset.page); routeTo('results', Object.fromEntries(params)); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
@@ -462,8 +484,57 @@ function drawResults(params) {
 function renderStudentDetail(index) {
   const student = students[Number(index)];
   if (!student) { renderNotFound(); return; }
+  revealTimers.forEach(clearTimeout);
+  revealTimers = [];
+  const run = ++revealRun;
+  const subjects = subjectsFor(student);
+  const trackName = isSocialScienceStudent(student)
+    ? (language === 'en' ? 'Social Science' : 'វិទ្យាសាស្ត្រសង្គម')
+    : (language === 'en' ? 'Science' : 'វិទ្យាសាស្ត្រ');
+  app.innerHTML = `${pageHero(language === 'en' ? 'Opening your result' : 'កំពុងបើកលទ្ធផលរបស់អ្នក', language === 'en' ? 'Your subjects will be revealed one at a time.' : 'មុខវិជ្ជារបស់អ្នកនឹងបង្ហាញម្តងមួយៗ។', [['#students', language === 'en' ? 'Student Search' : 'ស្វែងរកសិស្ស']])}
+    <section class="page-content result-reveal-page"><div class="shell">
+      <article class="reveal-letter" aria-live="polite">
+        <div class="reveal-seal" aria-hidden="true">ប</div>
+        <p class="reveal-kicker">${language === 'en' ? '2026 Examination Result' : 'លទ្ធផលប្រឡងឆ្នាំ ២០២៦'}</p>
+        <h1>${escapeHtml(student.Name)}</h1>
+        <p class="reveal-track">${trackName}</p>
+        <div class="reveal-subjects">${subjects.map(([aliases, khmer, englishLabel], subjectIndex) => `<div class="reveal-subject" data-reveal-index="${subjectIndex}" aria-hidden="true"><span>${language === 'en' ? englishLabel : khmer}</span><strong>${escapeHtml(subjectScore(student, aliases))}</strong></div>`).join('')}</div>
+        <p class="reveal-progress">${language === 'en' ? 'Preparing your result…' : 'កំពុងរៀបចំលទ្ធផលរបស់អ្នក…'}</p>
+        <button class="reveal-skip" type="button">${language === 'en' ? 'Show full result now' : 'បង្ហាញលទ្ធផលពេញឥឡូវនេះ'}</button>
+      </article>
+    </div></section>`;
+
+  const finishReveal = () => {
+    if (run !== revealRun || location.hash.split('?')[0] !== `#student/${index}`) return;
+    revealTimers.forEach(clearTimeout);
+    revealTimers = [];
+    document.querySelector('.reveal-letter')?.classList.add('reveal-complete');
+    revealTimers.push(setTimeout(() => {
+      if (run !== revealRun || location.hash.split('?')[0] !== `#student/${index}`) return;
+      renderFullStudentDetail(index);
+      applyLanguage();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 650));
+  };
+  document.querySelector('.reveal-skip')?.addEventListener('click', finishReveal);
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const stepDelay = reducedMotion ? 80 : 650;
+  subjects.forEach((_, subjectIndex) => {
+    revealTimers.push(setTimeout(() => {
+      if (run !== revealRun) return;
+      const subject = document.querySelector(`[data-reveal-index="${subjectIndex}"]`);
+      subject?.classList.add('is-revealed');
+      subject?.setAttribute('aria-hidden', 'false');
+    }, 450 + subjectIndex * stepDelay));
+  });
+  revealTimers.push(setTimeout(finishReveal, 450 + subjects.length * stepDelay + 700));
+}
+
+function renderFullStudentDetail(index) {
+  const student = students[Number(index)];
+  if (!student) { renderNotFound(); return; }
   const totalScore = getValue(student, 'Total Score', 'Total', 'Score Total');
-  const scores = Object.entries(subjectLabels).map(([key, [khmer, english]]) => `<tr><td><strong>${khmer}</strong><br><span class="meta-label">${english}</span></td><td><span class="grade-badge">${escapeHtml(student.Scores?.[key] || '—')}</span></td></tr>`).join('');
+  const scores = subjectsFor(student).map(([aliases, khmer, english]) => `<tr><td><strong>${khmer}</strong><br><span class="meta-label">${english}</span></td><td><span class="grade-badge">${escapeHtml(subjectScore(student, aliases))}</span></td></tr>`).join('');
   app.innerHTML = `${pageHero('លទ្ធផលសិស្ស', 'ព័ត៌មានលម្អិតពីកំណត់ត្រា និងនិទ្ទេសតាមមុខវិជ្ជា។', [['#students', 'ស្វែងរកសិស្ស'], ['#student', escapeHtml(student.Name)]])}
     <section class="page-content"><div class="shell detail-grid">
       <article class="detail-card official-result-card"><div class="result-document-label"><span aria-hidden="true">🎓</span>${language === 'en' ? 'Student Result' : 'លទ្ធផលសិស្ស'}</div><div class="result-identity"><div class="result-grade">${escapeHtml(student.Grade || '—')}</div><div><div class="detail-status-row"><span class="status-badge ${normalize(student['Total Result']).includes('ធ្លាក់') ? 'failed' : ''}">${escapeHtml(student['Total Result'] || 'មិនមានទិន្នន័យ')}</span><span class="year-badge">ឆ្នាំ ${escapeHtml(khmerNumber(studentYear(student)))}</span></div><h1>${escapeHtml(student.Name)}</h1><p>${escapeHtml(student['School Name'] || 'មិនមានទិន្នន័យសាលា')}</p></div></div>

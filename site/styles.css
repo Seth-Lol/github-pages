@@ -116,7 +116,7 @@ input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px 
 .section-heading { max-width: 690px; margin: 0 auto 32px; text-align: center; }
 .section-heading h2, .page-title h1 { margin: 0; font-size: clamp(1.8rem, 4vw, 2.7rem); line-height: 1.35; letter-spacing: -.025em; }
 .section-heading > p, .page-title > p { margin: 12px auto 0; color: var(--text-secondary); line-height: 1.85; }
-.quick-icon { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 12px; background: var(--primary-light); color: var(--primary); font: 800 16px/1 Inter, sans-serif; }
+.quick-icon { width: max-content; min-width: 46px; min-height: 46px; display: grid; place-items: center; border-radius: 12px; background: var(--primary-light); color: var(--primary); padding: 8px 12px; font: 800 13px/1.2 Inter, "Noto Sans Khmer", sans-serif; white-space: nowrap; }
 .school-contact-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
 .school-contact-actions a { border: 1px solid #b8cadb; border-radius: var(--radius-m); background: #fff; color: var(--primary); padding: 8px 12px; font-size: 11px; font-weight: 700; text-decoration: none; }
 .school-contact-actions a:first-child { border-color: var(--primary); background: var(--primary); color: #fff; }
@@ -177,7 +177,7 @@ input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px 
 .result-cards-mobile { display: none; gap: 12px; }
 .student-card { border: 1px solid var(--border); border-radius: var(--radius-l); background: #fff; box-shadow: var(--shadow-s); padding: 18px; }
 .student-card-head { display: flex; align-items: flex-start; gap: 12px; }
-.student-card-head > div:nth-child(2) { min-width: 0; flex: 1; }
+.student-card-head > div { min-width: 0; flex: 1; }
 .student-card h3 { margin: 0; font-size: 16px; overflow-wrap: anywhere; }
 .student-card .school-name { margin: 4px 0 0; color: var(--text-secondary); font-size: 11px; line-height: 1.6; }
 .student-card-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; padding: 14px 0; border-block: 1px solid var(--border); }
@@ -379,8 +379,7 @@ input, select { min-height: 52px; border-color: #b9c9d7; border-radius: 9px; fon
 .table-wrap { overflow: visible; border: 0; background: transparent; box-shadow: none; }
 .results-table { display: none; }
 .result-cards-mobile { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
-.student-card { position: relative; overflow: hidden; border: 1px solid #c9d6e1; border-top: 5px solid var(--success); border-radius: 14px; box-shadow: 0 5px 18px rgba(18, 63, 115, .07); padding: 22px; }
-.student-card.result-failed { border-top-color: var(--error); }
+.student-card { position: relative; overflow: hidden; border: 1px solid #c9d6e1; border-top: 5px solid var(--primary); border-radius: 14px; box-shadow: 0 5px 18px rgba(18, 63, 115, .07); padding: 22px; }
 .student-card-head { gap: 14px; }
 .student-card h3 { font-size: 19px; line-height: 1.55; }
 .student-card .school-name { font-size: 14px; line-height: 1.7; }
@@ -389,13 +388,6 @@ input, select { min-height: 52px; border-color: #b9c9d7; border-radius: 9px; fon
 .student-card-meta { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 18px 0 14px; padding: 15px 0; }
 .meta-label { font-size: 11px; }
 .meta-value { margin-top: 5px; font-size: 14px; overflow-wrap: anywhere; }
-.score-accordion { margin: 0 0 14px; border: 1px solid #d5e0e8; border-radius: 10px; background: #f8fafb; }
-.score-accordion summary { min-height: 48px; display: flex; align-items: center; justify-content: space-between; color: var(--navy); padding: 10px 14px; font-size: 14px; font-weight: 700; cursor: pointer; list-style: none; }
-.score-accordion summary::after { content: "+"; color: var(--gold-dark); font: 800 20px/1 Inter, sans-serif; }
-.score-accordion[open] summary::after { content: "−"; }
-.score-accordion table { width: 100%; border-collapse: collapse; }
-.score-accordion td { border-top: 1px solid #dce4eb; padding: 9px 14px; font-size: 13px; }
-.score-accordion td:last-child { text-align: right; }
 .student-card .btn { min-height: 48px; font-size: 14px; }
 .state-card { border-top: 5px solid var(--gold); padding: 52px 28px; }
 .state-symbol { width: 60px; height: 60px; background: var(--gold-light); color: var(--gold-dark); font-size: 22px; }
@@ -489,6 +481,25 @@ html[lang="km"] .hero-copy h1 { font-family: "Noto Sans Khmer", sans-serif; line
 .total-score-field { background: var(--gold-light); }
 .total-score-field .meta-value { color: var(--gold-dark); font-size: 22px; }
 
+.result-reveal-page { min-height: 70vh; background: radial-gradient(circle at 50% 0, #e9f1fb 0, transparent 48%); }
+.reveal-letter { position: relative; overflow: hidden; width: min(100%, 760px); margin: 0 auto; border: 1px solid #d6c9aa; border-radius: 6px; background: #fffdf8; box-shadow: 0 24px 60px rgba(30, 47, 68, .14); padding: clamp(32px, 6vw, 64px); text-align: center; }
+.reveal-letter::before { position: absolute; inset: 12px; border: 1px solid #eadfca; pointer-events: none; content: ""; }
+.reveal-seal { position: relative; width: 58px; height: 58px; display: grid; place-items: center; margin: 0 auto 18px; border: 2px solid #fff; border-radius: 50%; background: var(--navy); color: #fff; font-size: 25px; font-weight: 800; box-shadow: 0 0 0 5px #d9a529; }
+.reveal-kicker { position: relative; margin: 0; color: var(--gold-dark); font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.reveal-letter h1 { position: relative; margin: 10px 0 4px; color: var(--navy); font-size: clamp(1.6rem, 5vw, 2.5rem); }
+.reveal-track { position: relative; margin: 0 0 28px; color: var(--text-secondary); font-weight: 700; }
+.reveal-subjects { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; text-align: left; }
+.reveal-subject { min-height: 58px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid #e8e0d1; border-radius: 10px; background: rgba(255,255,255,.75); padding: 12px 14px; opacity: .28; filter: blur(4px); transform: translateY(8px) scale(.98); transition: opacity .4s ease, filter .4s ease, transform .4s ease, border-color .4s ease, box-shadow .4s ease; }
+.reveal-subject span { font-size: 13px; font-weight: 700; }
+.reveal-subject strong { width: 38px; height: 38px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 50%; background: var(--gold-light); color: var(--gold-dark); font: 800 17px/1 Inter, sans-serif; }
+.reveal-subject.is-revealed { border-color: #d9a529; opacity: 1; filter: none; transform: none; box-shadow: 0 8px 20px rgba(217, 165, 41, .12); }
+.reveal-subject.is-revealed strong { animation: grade-pop .55s cubic-bezier(.2, .9, .25, 1.25) both; }
+.reveal-progress { position: relative; margin: 24px 0 8px; color: var(--text-secondary); font-size: 13px; }
+.reveal-skip { position: relative; border: 0; background: transparent; color: var(--primary); padding: 8px; font-size: 12px; font-weight: 700; text-decoration: underline; }
+.reveal-letter.reveal-complete { animation: letter-finish .65s ease both; }
+@keyframes grade-pop { 0% { opacity: 0; transform: scale(.45) rotate(-10deg); } 70% { transform: scale(1.12) rotate(2deg); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes letter-finish { to { opacity: 0; transform: translateY(-12px) scale(.985); } }
+
 .section, .search-stage, .page-content { animation: section-in .45s ease both; }
 @keyframes section-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -521,4 +532,10 @@ html[lang="km"] .hero-copy h1 { font-family: "Noto Sans Khmer", sans-serif; line
   .search-stage { padding-bottom: 34px; }
   .search-card-heading h2 { font-size: 17px; }
   .portal-stats .stat { min-height: 150px; }
+  .reveal-subjects { grid-template-columns: 1fr; }
+  .reveal-letter { padding: 34px 22px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-subject, .reveal-letter.reveal-complete { transition: none; animation-duration: .01ms; }
 }
