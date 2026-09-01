@@ -47,9 +47,7 @@ img { max-width: 100%; }
 .site-header { position: sticky; z-index: 20; top: 0; border-bottom: 1px solid rgba(214, 224, 233, .9); background: rgba(255, 255, 255, .96); box-shadow: var(--shadow-s); backdrop-filter: blur(14px); }
 .header-inner { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .brand { display: inline-flex; align-items: center; gap: 12px; color: var(--text); text-decoration: none; }
-.brand-mark { width: 46px; height: 46px; flex: 0 0 auto; display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 0 7px; border-radius: 12px; background: linear-gradient(145deg, #1b64ac, #0f3d72); color: #fff; box-shadow: 0 5px 14px rgba(21, 86, 154, .2); }
-.brand-mark span { font-weight: 800; font-size: 21px; }
-.brand-mark b { align-self: end; margin-bottom: 9px; color: #ffbac1; font: 800 9px/1 Inter, sans-serif; }
+.brand-mark { width: 46px; height: 46px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 12px; background: linear-gradient(145deg, #1b64ac, #0f3d72); color: #fff; font-size: 24px; font-weight: 800; line-height: 1; box-shadow: 0 5px 14px rgba(21, 86, 154, .2); }
 .brand-text { min-width: 0; }
 .brand-text strong, .brand-text small { display: block; }
 .brand-text strong { font-size: 14px; font-weight: 800; line-height: 1.45; }
@@ -324,7 +322,6 @@ html[lang="km"] body { line-height: 1.78; }
 .site-header { border-top: 4px solid var(--navy); box-shadow: 0 1px 0 rgba(18, 63, 115, .08); }
 .header-inner { min-height: 78px; }
 .brand-mark { border-radius: 10px; background: var(--navy); box-shadow: none; }
-.brand-mark b { color: #f5c65a; }
 .brand-text strong { font-size: 15px; }
 .brand-text small { font-size: 11px; }
 .primary-nav a { font-size: 14px; padding: 11px 14px; }
@@ -484,7 +481,8 @@ html[lang="km"] .hero-copy h1 { font-family: "Noto Sans Khmer", sans-serif; line
 .portal-stats .stat:hover { transform: translateY(-4px) scale(1.01); box-shadow: var(--shadow-l); }
 .portal-stats .stat strong { margin-top: 10px; color: var(--text); font-size: 34px; }
 .portal-stats .stat > span:last-child { font-size: 14px; }
-.stat-icon { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 11px; background: var(--primary-light); color: var(--primary); font: 800 11px/1 Inter, sans-serif; }
+.stat-icon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px; background: var(--primary-light); color: var(--primary); }
+.stat-icon svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
 
 .official-result-card { overflow: hidden; border-top: 5px solid var(--primary); }
 .result-document-label { display: flex; align-items: center; gap: 9px; border-bottom: 1px solid var(--border); background: #f5f8fb; color: var(--primary); padding: 13px 24px; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
