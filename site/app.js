@@ -295,7 +295,7 @@ function renderHome(params = new URLSearchParams()) {
     <section class="section statistics-section">
       <div class="shell">
         <div class="section-heading"><h2>${language === 'en' ? 'BACII Results at a Glance' : 'ទិន្នន័យលទ្ធផលបាក់ឌុបសង្ខេប'}</h2></div>
-        <div class="stats-grid portal-stats"><article class="stat"><span class="stat-icon" aria-hidden="true">ST</span><strong>500K+</strong><span>${language === 'en' ? 'Students' : 'សិស្ស'}</span></article><article class="stat"><span class="stat-icon" aria-hidden="true">SC</span><strong>1200+</strong><span>${language === 'en' ? 'Schools' : 'សាលារៀន'}</span></article><article class="stat"><span class="stat-icon" aria-hidden="true">PV</span><strong>25</strong><span>${language === 'en' ? 'Provinces' : 'រាជធានី-ខេត្ត'}</span></article></div>
+        <div class="stats-grid portal-stats"><article class="stat"><span class="stat-icon" aria-hidden="true">TC</span><strong>${language === 'en' ? '125,575' : '១២៥ ៥៧៥ នាក់'}</strong><span>${language === 'en' ? 'Total candidates' : 'បេក្ខជនចូលរួមប្រឡងសរុប'}</span></article><article class="stat"><span class="stat-icon" aria-hidden="true">SC</span><strong>${language === 'en' ? '84,06' : '៨៤ ០៦ នាក់'}</strong><span>${language === 'en' ? 'Total successful candidates' : 'បេក្ខជនជាប់សរុប'}</span></article><article class="stat"><span class="stat-icon" aria-hidden="true">A</span><strong>${language === 'en' ? '2,022 candidates' : '២ ០២២ នាក់'}</strong><span>${language === 'en' ? 'Grade A' : 'និទ្ទេស A'}</span></article></div>
       </div>
     </section>
 
